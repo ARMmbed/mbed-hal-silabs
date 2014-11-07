@@ -1,0 +1,5 @@
+# don't try to compile these implementations for now, the API is still moving
+# fast:
+source/serial_api.c
+source/spi_api.c
+source/us_ticker.c

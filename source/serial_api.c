@@ -69,14 +69,14 @@ static void uart_init(serial_t *obj)
 {
     USART_InitAsync_TypeDef init = USART_INITASYNC_DEFAULT;
 
-    init.enable = obj->enable;
-    init.baudrate = obj->baudrate;
-    init.oversampling = obj->oversampling;
-    init.databits = obj->databits;
-    init.parity = obj->parity;
-    init.stopbits = obj->stopbits;
+    init.enable = obj->serial.enable;
+    init.baudrate = obj->serial.baudrate;
+    init.oversampling = obj->serial.oversampling;
+    init.databits = obj->serial.databits;
+    init.parity = obj->serial.parity;
+    init.stopbits = obj->serial.stopbits;
 
-    USART_InitAsync(obj->uart, &init);
+    USART_InitAsync(obj->serial.uart, &init);
 }
 
 void serial_init(serial_t *obj, PinName tx, PinName rx)
@@ -88,7 +88,7 @@ void serial_init(serial_t *obj, PinName tx, PinName rx)
     UARTName uart = (UARTName) pinmap_merge(uart_tx, uart_rx);
     MBED_ASSERT((int) uart != NC);
 
-    obj->uart = (USART_TypeDef *) uart;
+    obj->serial.uart = (USART_TypeDef *) uart;
 
     /* Get location */
     uint32_t uart_tx_loc = pin_location(tx, PinMap_UART_TX);
@@ -105,8 +105,8 @@ void serial_init(serial_t *obj, PinName tx, PinName rx)
     /* 0x10 sets DOUT. Prevents false start. */
     pin_mode(tx, PushPull | 0x10);
     /* Store pins in object for easy disabling in serial_free() */
-    obj->rx_pin = rx;
-    obj->tx_pin = tx;
+    obj->serial.rx_pin = rx;
+    obj->serial.tx_pin = tx;
 
     /* Enable peripheral clocks */
     CMU_ClockEnable(cmuClock_HFPER, true);
@@ -115,75 +115,75 @@ void serial_init(serial_t *obj, PinName tx, PinName rx)
     switch (uart) {
 #ifdef UART0
         case UART_0:
-            obj->index = 0;
-            obj->clock = cmuClock_UART0;
-            obj->rx_irq = UART0_RX_IRQn;
-            obj->tx_irq = UART0_TX_IRQn;
-            obj->rx_vector = (uint32_t) &uart0_rx_irq;
-            obj->tx_vector = (uint32_t) &uart0_tx_irq;
+            obj->serial.index = 0;
+            obj->serial.clock = cmuClock_UART0;
+            obj->serial.rx_irq = UART0_RX_IRQn;
+            obj->serial.tx_irq = UART0_TX_IRQn;
+            obj->serial.rx_vector = (uint32_t) &uart0_rx_irq;
+            obj->serial.tx_vector = (uint32_t) &uart0_tx_irq;
             break;
 #endif
 #ifdef UART1
         case UART_1:
-            obj->index = 1;
-            obj->clock = cmuClock_UART1;
-            obj->rx_irq = UART1_RX_IRQn;
-            obj->tx_irq = UART1_TX_IRQn;
-            obj->rx_vector = (uint32_t) &uart1_rx_irq;
-            obj->tx_vector = (uint32_t) &uart1_tx_irq;
+            obj->serial.index = 1;
+            obj->serial.clock = cmuClock_UART1;
+            obj->serial.rx_irq = UART1_RX_IRQn;
+            obj->serial.tx_irq = UART1_TX_IRQn;
+            obj->serial.rx_vector = (uint32_t) &uart1_rx_irq;
+            obj->serial.tx_vector = (uint32_t) &uart1_tx_irq;
             break;
 #endif
 #ifdef USART0
         case USART_0:
-            obj->index = 2;
-            obj->clock = cmuClock_USART0;
-            obj->rx_irq = USART0_RX_IRQn;
-            obj->tx_irq = USART0_TX_IRQn;
-            obj->rx_vector = (uint32_t) &usart0_rx_irq;
-            obj->tx_vector = (uint32_t) &usart0_tx_irq;
+            obj->serial.index = 2;
+            obj->serial.clock = cmuClock_USART0;
+            obj->serial.rx_irq = USART0_RX_IRQn;
+            obj->serial.tx_irq = USART0_TX_IRQn;
+            obj->serial.rx_vector = (uint32_t) &usart0_rx_irq;
+            obj->serial.tx_vector = (uint32_t) &usart0_tx_irq;
             break;
 #endif
 #ifdef USART1
         case USART_1:
-            obj->index = 3;
-            obj->clock = cmuClock_USART1;
-            obj->rx_irq = USART1_RX_IRQn;
-            obj->tx_irq = USART1_TX_IRQn;
-            obj->rx_vector = (uint32_t) &usart1_rx_irq;
-            obj->tx_vector = (uint32_t) &usart1_tx_irq;
+            obj->serial.index = 3;
+            obj->serial.clock = cmuClock_USART1;
+            obj->serial.rx_irq = USART1_RX_IRQn;
+            obj->serial.tx_irq = USART1_TX_IRQn;
+            obj->serial.rx_vector = (uint32_t) &usart1_rx_irq;
+            obj->serial.tx_vector = (uint32_t) &usart1_tx_irq;
             break;
 #endif
 #ifdef USART2
         case USART_2:
-            obj->index = 4;
-            obj->clock = cmuClock_USART2;
-            obj->rx_irq = USART2_RX_IRQn;
-            obj->tx_irq = USART2_TX_IRQn;
-            obj->rx_vector = (uint32_t) &usart2_rx_irq;
-            obj->tx_vector = (uint32_t) &usart2_tx_irq;
+            obj->serial.index = 4;
+            obj->serial.clock = cmuClock_USART2;
+            obj->serial.rx_irq = USART2_RX_IRQn;
+            obj->serial.tx_irq = USART2_TX_IRQn;
+            obj->serial.rx_vector = (uint32_t) &usart2_rx_irq;
+            obj->serial.tx_vector = (uint32_t) &usart2_tx_irq;
             break;
 #endif
     }
-    CMU_ClockEnable(obj->clock, true);
+    CMU_ClockEnable(obj->serial.clock, true);
 
     /* Configure UART for async operation */
-    obj->enable = usartDisable;
-    obj->baudrate = 9600;
-    obj->oversampling = usartOVS16;
-    obj->databits = usartDatabits8;
-    obj->parity = usartNoParity;
-    obj->stopbits = usartStopbits1;
+    obj->serial.enable = usartDisable;
+    obj->serial.baudrate = 9600;
+    obj->serial.oversampling = usartOVS16;
+    obj->serial.databits = usartDatabits8;
+    obj->serial.parity = usartNoParity;
+    obj->serial.stopbits = usartStopbits1;
     uart_init(obj);
 
     /* Enable pins for UART at correct location */
-    obj->uart->ROUTE = USART_ROUTE_RXPEN | USART_ROUTE_TXPEN | (location << _USART_ROUTE_LOCATION_SHIFT);
+    obj->serial.uart->ROUTE = USART_ROUTE_RXPEN | USART_ROUTE_TXPEN | (location << _USART_ROUTE_LOCATION_SHIFT);
 
     /* Finally enable UART */
-    obj->enable = usartEnable;
-    USART_Enable(obj->uart, usartEnable);
+    obj->serial.enable = usartEnable;
+    USART_Enable(obj->serial.uart, usartEnable);
 
     /* If this is the UART to be used for stdio, copy it to the stdio_uart struct */
-    if (obj->uart == STDIO_UART ) {
+    if (obj->serial.uart == STDIO_UART ) {
         stdio_uart_inited = 1;
         memcpy(&stdio_uart, obj, sizeof(serial_t));
     }
@@ -194,14 +194,14 @@ void serial_init(serial_t *obj, PinName tx, PinName rx)
  */
 void serial_free(serial_t *obj)
 {
-    USART_Enable(obj->uart, usartDisable);
-    USART_Reset(obj->uart);
-    CMU_ClockEnable(obj->clock, false);
+    USART_Enable(obj->serial.uart, usartDisable);
+    USART_Reset(obj->serial.uart);
+    CMU_ClockEnable(obj->serial.clock, false);
 
-    pin_mode(obj->tx_pin, Disabled);
-    pin_mode(obj->rx_pin, Disabled);
+    pin_mode(obj->serial.tx_pin, Disabled);
+    pin_mode(obj->serial.rx_pin, Disabled);
 
-    serial_irq_ids[obj->index] = 0;
+    serial_irq_ids[obj->serial.index] = 0;
 }
 
 /**
@@ -209,10 +209,10 @@ void serial_free(serial_t *obj)
  */
 void serial_baud(serial_t *obj, int baudrate)
 {
-    obj->baudrate = baudrate;
+    obj->serial.baudrate = baudrate;
     
     /* Call emlib directly for changing baud rate without resetting usart */
-    USART_BaudrateAsyncSet(obj->uart, 0, baudrate, obj->oversampling);
+    USART_BaudrateAsyncSet(obj->serial.uart, 0, baudrate, obj->serial.oversampling);
 }
 
 /**
@@ -222,25 +222,25 @@ void serial_format(serial_t *obj, int data_bits, SerialParity parity, int stop_b
 {
     /* We support 4 to 9 data bits */
     MBED_ASSERT(data_bits >= 4 && data_bits <= 9);
-    obj->databits = (USART_Databits_TypeDef)((data_bits - 3) << _USART_FRAME_DATABITS_SHIFT);
+    obj->serial.databits = (USART_Databits_TypeDef)((data_bits - 3) << _USART_FRAME_DATABITS_SHIFT);
 
     if (stop_bits == 2) {
-        obj->stopbits = usartStopbits2;
+        obj->serial.stopbits = usartStopbits2;
     } else {
-        obj->stopbits = usartStopbits1;
+        obj->serial.stopbits = usartStopbits1;
     }
 
     switch (parity) {
         case ParityOdd:
         case ParityForced0:
-            obj->parity = usartOddParity;
+            obj->serial.parity = usartOddParity;
             break;
         case ParityEven:
         case ParityForced1:
-            obj->parity = usartEvenParity;
+            obj->serial.parity = usartEvenParity;
             break;
         default: /* ParityNone */
-            obj->parity = usartNoParity;
+            obj->serial.parity = usartNoParity;
             break;
     }
 
@@ -259,7 +259,7 @@ void serial_format(serial_t *obj, int data_bits, SerialParity parity, int stop_b
 void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uint32_t id)
 {
     irq_handler = handler;
-    serial_irq_ids[obj->index] = id;
+    serial_irq_ids[obj->serial.index] = id;
 }
 
 /**
@@ -282,23 +282,23 @@ void serial_irq_set(serial_t *obj, SerialIrq irq, uint32_t enable)
     /* Enable or disable interrupt */
     if (enable) {
         if (irq == RxIrq) { /* RX */
-            USART_IntEnable(obj->uart, USART_IEN_RXDATAV);
-            NVIC_ClearPendingIRQ(obj->rx_irq);
-            NVIC_SetVector(obj->rx_irq, obj->rx_vector);
-            NVIC_EnableIRQ(obj->rx_irq);
+            USART_IntEnable(obj->serial.uart, USART_IEN_RXDATAV);
+            NVIC_ClearPendingIRQ(obj->serial.rx_irq);
+            NVIC_SetVector(obj->serial.rx_irq, obj->serial.rx_vector);
+            NVIC_EnableIRQ(obj->serial.rx_irq);
         } else { /* TX */
-            USART_IntEnable(obj->uart, USART_IEN_TXBL);
-            NVIC_ClearPendingIRQ(obj->tx_irq);
-            NVIC_SetVector(obj->tx_irq, obj->tx_vector);
-            NVIC_EnableIRQ(obj->tx_irq);
+            USART_IntEnable(obj->serial.uart, USART_IEN_TXBL);
+            NVIC_ClearPendingIRQ(obj->serial.tx_irq);
+            NVIC_SetVector(obj->serial.tx_irq, obj->serial.tx_vector);
+            NVIC_EnableIRQ(obj->serial.tx_irq);
         }
     } else {
         if (irq == RxIrq) { /* RX */
-            USART_IntDisable(obj->uart, USART_IEN_RXDATAV);
-            NVIC_DisableIRQ(obj->rx_irq);
+            USART_IntDisable(obj->serial.uart, USART_IEN_RXDATAV);
+            NVIC_DisableIRQ(obj->serial.rx_irq);
         } else { /* TX */
-            USART_IntDisable(obj->uart, USART_IEN_TXBL);
-            NVIC_DisableIRQ(obj->tx_irq);
+            USART_IntDisable(obj->serial.uart, USART_IEN_TXBL);
+            NVIC_DisableIRQ(obj->serial.tx_irq);
         }
     }
 }
@@ -317,7 +317,7 @@ int serial_getc(serial_t *obj)
      *
      * Use Rx with extended control in order to read up to 9 bits.
      * Only return the lower 9 bits, higher bits may contain control data. */
-    return USART_RxExt(obj->uart) & 0x1FF;
+    return USART_RxExt(obj->serial.uart) & 0x1FF;
 }
 
 /*
@@ -330,7 +330,7 @@ void serial_putc(serial_t *obj, int c)
      * 
      * Use Tx with extended control in order to write up to 9 bits.
      * Only write the lower 9 bits, higher bits are for control data. */
-    USART_TxExt(obj->uart, (uint16_t)(c) & 0x1FF);
+    USART_TxExt(obj->serial.uart, (uint16_t)(c) & 0x1FF);
 }
 
 /**
@@ -338,7 +338,7 @@ void serial_putc(serial_t *obj, int c)
  */
 int serial_readable(serial_t *obj)
 {
-    return obj->uart->STATUS & USART_STATUS_RXDATAV;
+    return obj->serial.uart->STATUS & USART_STATUS_RXDATAV;
 }
 
 /**
@@ -346,7 +346,7 @@ int serial_readable(serial_t *obj)
  */
 int serial_writable(serial_t *obj)
 {
-    return obj->uart->STATUS & USART_STATUS_TXBL;
+    return obj->serial.uart->STATUS & USART_STATUS_TXBL;
 }
 
 /**
@@ -360,7 +360,7 @@ void serial_clear(serial_t *obj)
 void serial_break_set(serial_t *obj)
 {
     /* Send transmission break */
-    obj->uart->TXDATAX |= USART_TXDATAX_TXBREAK;
+    obj->serial.uart->TXDATAX |= USART_TXDATAX_TXBREAK;
 }
 
 void serial_break_clear(serial_t *obj)

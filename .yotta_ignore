@@ -1,4 +1,0 @@
-# don't try to compile these implementations for now, the API is still moving
-# fast:
-source/spi_api.c
-#source/serial_api.c

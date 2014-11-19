@@ -1,7 +1,7 @@
 {
-  "name": "mbed-hal-efm32",
+  "name": "mbed-hal-silabs",
   "version": "0.0.0",
-  "description": "mbed low-level Hardware Abstraction Layer implementation for EFM-32",
+  "description": "mbed low-level Hardware Abstraction Layer implementation for Silicon Labs' microcontrollers",
   "keywords": [
     "mbed",
     "HAL"

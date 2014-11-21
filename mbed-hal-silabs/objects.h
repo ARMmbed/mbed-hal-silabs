@@ -20,6 +20,7 @@
 #include "PeripheralNames.h"
 #include "PortNames.h"
 #include "em_i2c.h"
+#include "dma_api.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -110,6 +111,10 @@ struct spi_s {
     USART_Databits_TypeDef databits;
     bool master;
     USART_ClockMode_TypeDef clockMode;
+    uint32_t event;
+    DMA_USAGE_Enum dmaUsageState;
+    int dmaChannelToSpi;
+    int dmaChannelFromSpi;
 };
 #endif
 

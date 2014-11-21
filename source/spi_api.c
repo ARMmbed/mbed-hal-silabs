@@ -26,6 +26,37 @@
 #include "em_usart.h"
 #include "em_cmu.h"
 
+#define max(a,b)\
+    ((a)>(b)?(a):(b))
+#define min(a,b)\
+    ((a)<(b)?(a):(b))
+
+static uint8_t spi_get_index(spi_t *obj)
+{
+    uint8_t index;
+    switch ((int)obj->spi.spi) {
+#ifdef USART0
+        case SPI_0:
+            index = 0;
+            break;
+#endif
+#ifdef USART1
+        case SPI_1:
+            index = 1;
+            break;
+#endif
+#ifdef USART2
+        case SPI_2:
+            index = 2;
+            break;
+#endif
+        default:
+            error("Spi module not available.. Out of bound access.");
+            break;
+    }
+    return index;
+}
+
 void usart_init(spi_t *obj)
 {
     USART_InitSync_TypeDef init = USART_INITSYNC_DEFAULT;
@@ -140,6 +171,69 @@ void spi_init(spi_t *obj, PinName mosi, PinName miso, PinName clk, PinName cs)
     usart_init(obj);
 }
 
+void spi_enable_event(spi_t *obj, uint32_t event, uint8_t enable)
+{
+    uint32_t flags;
+    //if (event & SPI_EVENT_COMPLETE) {
+    //    flags = USART_IEN_RXDATAV;
+    //}
+
+    if(enable) obj->spi.event |= event;
+    else obj->spi.event &= ~event;
+/*
+    if (enable) {
+        obj->spi.event = event;
+        USART_IntEnable(obj->spi.spi, flags);
+    } else {
+        USART_IntDisable(obj->spi.spi, flags);
+    }*/
+}
+
+/****************************************************************************
+* void spi_enable_interrupt(spi_t *obj, uint32_t handler, uint8_t enable)
+*
+* This will enable the interrupt in NVIC for the associated USART RX channel
+*
+*   * obj: pointer to spi object
+*   * handler: pointer to interrupt handler for this channel
+*   * enable: Whether to enable (true) or disable (false) the interrupt
+*
+****************************************************************************/
+static void spi_enable_interrupt(spi_t *obj, uint32_t handler, uint8_t enable)
+{
+    uint8_t index = spi_get_index(obj);
+    uint32_t IRQvector;
+
+    switch (index) {
+#ifdef USART0
+        case 0:
+            IRQvector = USART0_RX_IRQn;
+            break;
+#endif
+#ifdef USART1
+        case 1:
+            IRQvector = USART1_RX_IRQn;
+            break;
+#endif
+#ifdef USART2
+        case 2:
+            IRQvector = USART2_RX_IRQn;
+            break;
+#endif
+    }
+
+    if (enable) {
+        NVIC_SetVector(IRQvector, handler);
+        USART_IntEnable(obj->spi.spi, USART_IEN_RXDATAV);
+        NVIC_EnableIRQ(IRQvector);
+    }
+    else {
+        NVIC_SetVector(IRQvector, handler);
+        USART_IntDisable(obj->spi.spi, USART_IEN_RXDATAV);
+        NVIC_DisableIRQ(IRQvector);
+    }
+}
+
 void spi_free(spi_t *obj)
 {
     /* Reset USART and disable clock */
@@ -251,6 +345,182 @@ int spi_slave_read(spi_t *obj)
 void spi_slave_write(spi_t *obj, int value)
 {
     spi_write(obj, value);
+}
+
+uint8_t spi_active(spi_t *obj)
+{
+    switch(obj->spi.dmaUsageState) {
+        case DMA_USAGE_TEMPORARY_ALLOCATED:
+            return true;
+        case DMA_USAGE_ALLOCATED:
+            /* Check whether the allocated DMA channel is active */
+            // !!! TODO
+            //return (DMA_ChannelEnabled(obj->spi.dmaChannelToSpi) || DMA_ChannelEnabled(obj->spi.dmaChannelFromSpi));
+            MBED_ASSERT(0);
+        default:
+            /* Check whether interrupt for spi is enabled */
+            return (obj->spi.spi->IEN & (USART_IEN_RXDATAV | USART_IEN_TXBL)) ? true : false;
+    }
+}
+
+void spi_buffer_set(spi_t *obj, void *tx, uint32_t tx_length, void *rx, uint32_t rx_length)
+{
+    obj->tx_buff.buffer = tx;
+    obj->tx_buff.length = tx_length;
+    obj->tx_buff.pos = 0;
+    obj->rx_buff.buffer = rx;
+    obj->rx_buff.length = rx_length;
+    obj->rx_buff.pos = 0;
+}
+
+static void spi_buffer_tx_write(spi_t *obj)
+{
+    int data;
+    if (obj->spi.bits <= 8) {
+        if (obj->tx_buff.buffer == 0) {
+            data = 0xFF;
+        } else {
+            uint8_t *tx = (uint8_t *)(obj->tx_buff.buffer);
+            data = tx[obj->tx_buff.pos];
+        }
+        obj->spi.spi->TXDATA = (uint32_t)data;
+    } else {
+        // TODO_LP implement
+    }
+    obj->tx_buff.pos++;
+}
+
+/**
+ * Send words from the SPI TX buffer until the send limit is reached or the TX FIFO is full
+ * TxLimit is provided to ensure that the number of SPI frames (words) in flight can be managed.
+ * @param[in] obj     The SPI object on which to operate
+ * @param[in] TxLimit The maximum number of words to send
+ * @return The number of SPI frames that have been transfered
+ */
+static int spi_master_write_asynch(spi_t *obj, uint32_t TxLimit)
+{
+    uint32_t ndata = 0;
+    uint32_t txRemaining = obj->tx_buff.length - obj->tx_buff.pos;
+    uint32_t rxRemaining = obj->rx_buff.length - obj->rx_buff.pos;
+    uint32_t maxTx = max(txRemaining, rxRemaining);
+    maxTx = min(maxTx, TxLimit);
+    // Send words until the FIFO is full or the send limit is reached
+    while (ndata < maxTx && (obj->spi.spi->STATUS & USART_STATUS_TXBL)) {
+        spi_buffer_tx_write(obj);
+        ndata++;
+    }
+    return ndata;
+}
+
+static void spi_buffer_rx_read(spi_t *obj)
+{
+    if (obj->spi.bits <= 8) {
+        int data = (int)obj->spi.spi->RXDATA; //read the data but store only if rx is set
+        if (obj->rx_buff.buffer) {
+            uint8_t *rx = (uint8_t *)(obj->rx_buff.buffer);
+            rx[obj->rx_buff.pos] = data;
+        }
+    } else {
+        // TODO_LP implement
+        MBED_ASSERT(0);
+    }
+    obj->rx_buff.pos++;
+}
+
+static int spi_master_read_asynch(spi_t *obj)
+{
+    int ndata = 0;
+    while ((obj->rx_buff.pos < obj->rx_buff.length) && (obj->spi.spi->STATUS & USART_STATUS_RXDATAV)) {
+        spi_buffer_rx_read(obj);
+        ndata++;
+    }
+    // all sent but still more to receive? need to align tx buffer
+    if ((obj->rx_buff.pos == obj->rx_buff.length) && (obj->rx_buff.pos < obj->rx_buff.length)) {
+        obj->rx_buff.buffer = (void *)0;
+        obj->rx_buff.length = obj->rx_buff.length;
+    }
+
+    return ndata;
+}
+
+static uint8_t spi_buffer_rx_empty(spi_t *obj)
+{
+    return (obj->rx_buff.pos == obj->rx_buff.length) ? true : false;
+}
+
+void spi_master_transfer(spi_t *obj, void* cb, DMA_USAGE_Enum hint)
+{
+    if (hint != DMA_USAGE_NEVER && obj->spi.dmaUsageState == DMA_USAGE_ALLOCATED) {
+        // !!! TODO setup dma done, activate
+        MBED_ASSERT(0);
+    } else if (hint == DMA_USAGE_NEVER) {
+        obj->spi.dmaUsageState = DMA_USAGE_NEVER;
+        // use IRQ
+        obj->spi.spi->IFC = 0xFFFFFFFF;
+        // fill the tx fifo / send everything if everything is less than the
+        // fifo size
+        spi_master_write_asynch(obj, obj->tx_buff.length - obj->tx_buff.pos);
+        spi_enable_interrupt(obj, (uint32_t)cb, true);
+    } else {
+        // !!! TODO setup and activate
+        MBED_ASSERT(0);
+    }
+}
+
+uint32_t spi_event_check(spi_t *obj)
+{
+    // !!! TODO other events!
+
+    uint32_t event = obj->spi.event;
+    if ((event & SPI_EVENT_COMPLETE) && !spi_buffer_rx_empty(obj)) {
+        event &= ~SPI_EVENT_COMPLETE;
+    }
+
+    return event;
+}
+
+/**
+ * Abort an SPI transfer
+ * This is a helper function for event handling. When any of the events listed occurs, the HAL will abort any ongoing
+ * transfers
+ * @param[in] obj The SPI peripheral to stop
+ */
+void spi_abort_asynch(spi_t *obj) {
+    spi_enable_interrupt(obj, 0, false);
+    // !!! TODO do we need to flush anything here?
+    // TODO who clears flags if any error occurred?
+}
+
+/**
+ * Handle the SPI interrupt
+ * Read frames until the RX FIFO is empty.  Write at most as many frames as were read.  This way,
+ * it is unlikely that the RX FIFO will overflow.
+ * @param[in] obj The SPI peripheral that generated the interrupt
+ * @return
+ */
+uint32_t spi_irq_handler_asynch(spi_t *obj)
+{
+    uint32_t result = 0;
+    if (obj->spi.dmaUsageState == DMA_USAGE_ALLOCATED || obj->spi.dmaUsageState == DMA_USAGE_TEMPORARY_ALLOCATED) {
+        // !!! TODO DMA implementation
+        MBED_ASSERT(0);
+    } else {
+        // Read frames until the RX FIFO is empty
+        uint32_t r = spi_master_read_asynch(obj);
+        // Write at most the same number of frames as were received
+        spi_master_write_asynch(obj, r);
+
+        // Check for SPI events
+        uint32_t event = spi_event_check(obj);
+        if (event) {
+            result = event;
+        }
+    }
+    // If an event was detected, abort the transfer
+    if (result) {
+        spi_abort_asynch(obj);
+    }
+    return result;
 }
 
 #endif

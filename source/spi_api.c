@@ -448,7 +448,7 @@ static uint8_t spi_buffer_rx_empty(spi_t *obj)
     return (obj->rx_buff.pos == obj->rx_buff.length) ? true : false;
 }
 
-void spi_master_transfer(spi_t *obj, void* cb, DMA_USAGE_Enum hint)
+void spi_master_transfer(spi_t *obj, void* cb, DMAUsage hint)
 {
     if (hint != DMA_USAGE_NEVER && obj->spi.dmaUsageState == DMA_USAGE_ALLOCATED) {
         // !!! TODO setup dma done, activate

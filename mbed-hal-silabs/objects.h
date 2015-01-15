@@ -112,7 +112,7 @@ struct spi_s {
     bool master;
     USART_ClockMode_TypeDef clockMode;
     uint32_t event;
-    DMA_USAGE_Enum dmaUsageState;
+    DMAUsage dmaUsageState;
     int dmaChannelToSpi;
     int dmaChannelFromSpi;
 };

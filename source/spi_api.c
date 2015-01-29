@@ -363,18 +363,22 @@ uint8_t spi_active(spi_t *obj)
     }
 }
 
-void spi_buffer_set(spi_t *obj, void *tx, uint32_t tx_length, void *rx, uint32_t rx_length)
+void spi_buffer_set(spi_t *obj, void *tx, uint32_t tx_length, void *rx, uint32_t rx_length, uint8_t bit_width)
 {
     obj->tx_buff.buffer = tx;
     obj->tx_buff.length = tx_length;
     obj->tx_buff.pos = 0;
+    obj->tx_buff.width = bit_width;
     obj->rx_buff.buffer = rx;
     obj->rx_buff.length = rx_length;
     obj->rx_buff.pos = 0;
+    obj->rx_buff.width = bit_width;
 }
 
 static void spi_buffer_tx_write(spi_t *obj)
 {
+    // !!! FIXME: respect tx_buff.width
+
     int data;
     if (obj->spi.bits <= 8) {
         if (obj->tx_buff.buffer == 0) {
@@ -414,6 +418,8 @@ static int spi_master_write_asynch(spi_t *obj, uint32_t TxLimit)
 
 static void spi_buffer_rx_read(spi_t *obj)
 {
+    // !!! FIXME: respect rx_buff.width
+
     if (obj->spi.bits <= 8) {
         int data = (int)obj->spi.spi->RXDATA; //read the data but store only if rx is set
         if (obj->rx_buff.buffer) {

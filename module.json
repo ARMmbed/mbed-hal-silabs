@@ -24,6 +24,9 @@
   "targetDependencies": {
     "stk3700": {
       "mbed-hal-efm32gg-stk3700": "ARMmbed/mbed-hal-efm32gg-stk3700"
+    },
+    "watch": {
+      "mbed-hal-efm32gg-watch": "ARMmbed/mbed-hal-efm32gg-watch#~0.0.1"
     }
   }
 }

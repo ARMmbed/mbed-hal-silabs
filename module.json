@@ -1,0 +1,22 @@
+{
+  "name": "mbed-hal-silabs",
+  "version": "0.0.0",
+  "description": "mbed low-level Hardware Abstraction Layer implementation for Silicon Labs microcontrollers",
+  "keywords": [
+    "mbed",
+    "HAL"
+  ],
+  "author": "Marcus Chang <marcus.chang@arm.com>",
+  "repository": {
+    "url": "git@github.com:ARMmbed/mbed-hal-silabs.git",
+    "type": "git"
+  },
+  "homepage": "https://github.com/ARMmbed/mbed-hal-silabs",
+  "license": "Apache-2",
+  "dependencies": {},
+  "targetDependencies": {
+    "efm32": {
+      "mbed-hal-efm32": "ARMmbed/mbed-hal-efm32#~0.0.1"
+    }
+  }
+}

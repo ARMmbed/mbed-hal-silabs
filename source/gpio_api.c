@@ -18,6 +18,11 @@
 #include "em_cmu.h"
 #include "mbed_assert.h"
 
+uint8_t gpio_get_index(gpio_t *obj)
+{
+    return 0;
+}
+
 /*
  * @return the GPIO port mask for this pin
  * Pin and port index encoded in one uint32.
@@ -33,18 +38,32 @@ void gpio_init(gpio_t *obj, PinName pin)
 {
     MBED_ASSERT(pin != NC);
 
-    //Enable GPIO clock
+    CMU_ClockEnable(cmuClock_HFPER, true);
     CMU_ClockEnable(cmuClock_GPIO, true);
-
     obj->pin = pin;
     obj->mask = gpio_set(pin);
     obj->port = pin >> 4;
+}
+
+void gpio_pin_enable(gpio_t *obj, uint8_t enable)
+{
+    if (enable) {
+        pin_mode(obj->pin, obj->mode);
+    } else {
+        pin_mode(obj->pin, Disabled); // TODO_LP return mode to default value
+    }
 }
 
 void gpio_mode(gpio_t *obj, PinMode mode)
 {
     obj->mode = mode; // Update object
     pin_mode(obj->pin, mode); // Update register
+    
+    //Handle pullup for input
+    if(mode == InputPullUp) {
+        //Set DOUT
+        GPIO->P[obj->port & 0xF].DOUTSET = 1 << (obj->pin & 0xF);
+    }
 }
 
 // Used by DigitalInOut to set correct mode when direction is set

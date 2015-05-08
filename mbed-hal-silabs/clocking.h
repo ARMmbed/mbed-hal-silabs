@@ -1,7 +1,6 @@
 /***************************************************************************//**
- * @file em_version.h
- * @brief Assign correct part number for include file
- * @version 3.20.12
+ * @file clocking.h
+ * @brief Clock selection calculations
  *******************************************************************************
  * @section License
  * <b>(C) Copyright 2014 Silicon Labs, http://www.silabs.com</b>
@@ -30,40 +29,30 @@
  *
  ******************************************************************************/
 
+#include "device_peripherals.h"
 
-#ifndef __SILICON_LABS_EM_VERSION_H_
-#define __SILICON_LABS_EM_VERSION_H_
-
-#include "em_device.h"
-
-#ifdef __cplusplus
-extern "C" {
+#if( CORE_CLOCK_SOURCE == HFXO)
+#define REFERENCE_FREQUENCY HFXO_FREQUENCY
+#elif( CORE_CLOCK_SOURCE == HFRCO)
+#if( HFRCO_FREQUENCY == CMU_HFRCOCTRL_BAND_1MHZ)
+#define REFERENCE_FREQUENCY 1000000
+#elif(HFRCO_FREQUENCY == CMU_HFRCOCTRL_BAND_7MHZ)
+#define REFERENCE_FREQUENCY 7000000
+#elif(HFRCO_FREQUENCY == CMU_HFRCOCTRL_BAND_11MHZ)
+#define REFERENCE_FREQUENCY 7000000
+#elif(HFRCO_FREQUENCY == CMU_HFRCOCTRL_BAND_14MHZ)
+#define REFERENCE_FREQUENCY 14000000
+#elif(HFRCO_FREQUENCY == CMU_HFRCOCTRL_BAND_21MHZ)
+#define REFERENCE_FREQUENCY 21000000
+#elif(HFRCO_FREQUENCY == CMU_HFRCOCTRL_BAND_28MHZ)
+#define REFERENCE_FREQUENCY 28000000
+#else
+#define REFERENCE_FREQUENCY 14000000
+#endif
 #endif
 
-/***************************************************************************//**
- * @addtogroup EM_Library
- * @{
- ******************************************************************************/
-
-/***************************************************************************//**
- * @addtogroup Version
- * @{
- ******************************************************************************/
-
-/** Version number of emlib peripheral API */
-#define _EMLIB_VERSION 3.20.12
-/** Major version of emlib */
-#define _EMLIB_VERSION_MAJOR 3
-/** Minor version of emlib */
-#define _EMLIB_VERSION_MINOR 20
-/** Patch revision of emlib */
-#define _EMLIB_VERSION_PATCH 12
-
-/** @} (end addtogroup Version) */
-/** @} (end addtogroup EM_Library) */
-
-#ifdef __cplusplus
-}
+#if ( defined(CMU_CTRL_HFLE) && (REFERENCE_FREQUENCY > 24000000) )
+#define LEUART_REF_FREQ (REFERENCE_FREQUENCY / 4)
+#else
+#define LEUART_REF_FREQ (REFERENCE_FREQUENCY / 2)
 #endif
-
-#endif /* __SILICON_LABS_EM_VERSION_H_ */

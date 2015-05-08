@@ -2,6 +2,7 @@
   "name": "mbed-hal-silabs",
   "version": "0.1.1",
   "description": "mbed low-level Hardware Abstraction Layer implementation for Silicon Labs' microcontrollers",
+  "private": true,
   "keywords": [
     "mbed",
     "HAL"

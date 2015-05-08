@@ -1,32 +1,29 @@
 {
   "name": "mbed-hal-silabs",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "mbed low-level Hardware Abstraction Layer implementation for Silicon Labs' microcontrollers",
   "keywords": [
     "mbed",
     "HAL"
   ],
-  "author": "Martin Kojtal <martin.kojtal@arm.com>",
+  "author": "Marcus Chang <marcus.chang@arm.com>",
   "repository": {
-    "url": "git@github.com:ARMmbed/mbed-hal.git",
+    "url": "git@github.com:ARMmbed/mbed-hal-silabs.git",
     "type": "git"
   },
-  "homepage": "https://github.com/ARMmbed/mbed-hal",
+  "homepage": "https://github.com/ARMmbed/mbed-hal-silabs",
   "license": "Apache-2",
   "extraIncludes": [
-    "source/emlib/inc",
-    "source/emdrv/gpiointerrupt/inc"
+    "mbed-hal-silabs",
+    "source/emlib/inc"
   ],
   "dependencies": {
-    "mbed-hal": "ARMmbed/mbed-hal",
-    "mbed-common": "ARMmbed/mbed-common"
+    "mbed-hal"  : "~0.1.0",
+    "cmsis-core": "~0.1.0"
   },
   "targetDependencies": {
-    "stk3700": {
-      "mbed-hal-efm32gg-stk3700": "ARMmbed/mbed-hal-efm32gg-stk3700"
-    },
-    "watch": {
-      "mbed-hal-efm32gg-watch": "ARMmbed/mbed-hal-efm32gg-watch#~0.0.1"
+    "efm32gg": {
+      "mbed-hal-efm32gg": "ARMmbed/mbed-hal-efm32gg#~0.0.1"
     }
   }
 }

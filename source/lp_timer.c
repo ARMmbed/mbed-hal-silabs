@@ -19,7 +19,7 @@
 
 #include "rtc_api.h"
 #include "rtc_api_HAL.h"
-#include "lptimer_api.h"
+#include "lp_ticker_api.h"
 
 void lp_ticker_init()
 {
@@ -31,12 +31,12 @@ void lp_ticker_set_interrupt(timestamp_t timestamp) {
 	uint64_t timestamp_ticks;
     uint64_t current_ticks = RTC_CounterGet();
     timestamp_t current_time = ((uint64_t)(current_ticks * 1000000) / (LOW_ENERGY_CLOCK_FREQUENCY / RTC_CLOCKDIV_INT));
-    
-    
+
+
     /* calculate offset value */
     timestamp_t offset = timestamp - current_time;
     if(offset > 0xEFFFFFFF) offset = 100;
-    
+
     /* map offset to RTC value */
 	// ticks = offset * RTC frequency div 1000000
 	timestamp_ticks = ((uint64_t)offset * (LOW_ENERGY_CLOCK_FREQUENCY / RTC_CLOCKDIV_INT)) / 1000000;
@@ -47,7 +47,7 @@ void lp_ticker_set_interrupt(timestamp_t timestamp) {
 
     /* check for RTC limitation */
     if((timestamp_ticks - RTC_CounterGet()) >= 0x800000) timestamp_ticks = RTC_CounterGet() + 2;
-    
+
 	/* Set callback */
 	RTC_FreezeEnable(true);
 	RTC_CompareSet(0, (uint32_t)timestamp_ticks);

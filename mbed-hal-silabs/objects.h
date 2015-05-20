@@ -109,7 +109,9 @@ struct serial_s {
 struct spi_s {
     USART_TypeDef *spi;
     int location;
+    uint32_t baudrate;
     uint8_t bits;
+    uint8_t msbf;
     uint8_t master;
 #if DEVICE_SPI_ASYNCH
     uint32_t event;

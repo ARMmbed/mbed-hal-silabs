@@ -91,8 +91,13 @@ static void usart_init(spi_t *obj, uint32_t baudrate, USART_Databits_TypeDef dat
     init.baudrate = baudrate;
     init.databits = databits;
     init.master = master;
-    init.msbf	= 1;
     init.clockMode = clockMode;
+
+    // use stored value for msbf
+    init.msbf   = obj->spi.msbf;
+
+    // update baudrate
+    obj->spi.baudrate = baudrate;
 
     /* Determine the reference clock, because the correct clock is not set up at init time */
     init.refFreq = REFERENCE_FREQUENCY;
@@ -128,6 +133,10 @@ void spi_preinit(spi_t *obj, PinName mosi, PinName miso, PinName clk, PinName cs
     MBED_ASSERT(obj->spi.location != NC);
 
     obj->spi.dmaOptionsTX.dmaUsageState = DMA_USAGE_OPPORTUNISTIC;
+
+    // default values, MSB and 1MHz
+    obj->spi.msbf = 1;
+    obj->spi.baudrate = 1000000;
 }
 
 void spi_enable_pins(spi_t *obj, uint8_t enable, PinName mosi, PinName miso, PinName clk, PinName cs)
@@ -202,7 +211,7 @@ void spi_init(spi_t *obj, PinName mosi, PinName miso, PinName clk, PinName cs)
 	CMU_ClockEnable(cmuClock_HFPER, true);
 	spi_preinit(obj, mosi, miso, clk, cs);
 	CMU_ClockEnable(spi_get_clock_tree(obj), true);
-	usart_init(obj, 100000, usartDatabits8, true, usartClockMode0);
+	usart_init(obj, 1000000, usartDatabits8, true, usartClockMode0);
 
 	spi_enable_pins(obj, true, mosi, miso, clk, cs);
     spi_enable(obj, true);
@@ -261,7 +270,7 @@ void spi_enable_interrupt(spi_t *obj, uint32_t handler, uint8_t enable)
     }
 }
 
-void spi_format(spi_t *obj, int bits, int mode, int slave)
+void spi_format(spi_t *obj, int bits, int order, int mode, int slave)
 {
     /* Bits: values between 4 and 16 are valid */
     MBED_ASSERT(bits >= 4 && bits <= 16);
@@ -288,12 +297,16 @@ void spi_format(spi_t *obj, int bits, int mode, int slave)
             clockMode = usartClockMode0;
     }
 
+    // set bit ordering
+    obj->spi.msbf = (order == 0) ? 1 : 0;
+
     //save state
     uint32_t route = obj->spi.spi->ROUTE;
     uint32_t iflags = obj->spi.spi->IEN;
+    uint32_t baudrate = obj->spi.baudrate;
     bool enabled = (obj->spi.spi->STATUS & (USART_STATUS_RXENS | USART_STATUS_TXENS)) != 0;
 
-    usart_init(obj, 100000, databits, (slave ? false : true), clockMode);
+    usart_init(obj, baudrate, databits, (slave ? false : true), clockMode);
 
     //restore state
     obj->spi.spi->ROUTE = route;
@@ -304,7 +317,11 @@ void spi_format(spi_t *obj, int bits, int mode, int slave)
 
 void spi_frequency(spi_t *obj, int hz)
 {
-    USART_BaudrateSyncSet(obj->spi.spi, REFERENCE_FREQUENCY, hz);
+    // store value
+    obj->spi.baudrate = hz;
+
+    // set value
+    USART_BaudrateSyncSet(obj->spi.spi, 0, hz);
 }
 
 /* Read/Write */
@@ -1056,25 +1073,25 @@ uint32_t spi_irq_handler_asynch(spi_t* obj) {
 void spi_abort_asynch(spi_t *obj) {
     // If we're not currently transferring, then there's nothing to do here
     if(spi_active(obj) != 0) return;
-    
+
     // Determine whether we're running DMA or interrupt
     if (obj->spi.dmaOptionsTX.dmaUsageState == DMA_USAGE_ALLOCATED || obj->spi.dmaOptionsTX.dmaUsageState == DMA_USAGE_TEMPORARY_ALLOCATED) {
         // Cancel the DMA transfers
         DMA_ChannelEnable(obj->spi.dmaOptionsTX.dmaChannel, false);
         DMA_ChannelEnable(obj->spi.dmaOptionsRX.dmaChannel, false);
-        
+
         /* Release the dma channels if they were opportunistically allocated */
         if (obj->spi.dmaOptionsTX.dmaUsageState == DMA_USAGE_TEMPORARY_ALLOCATED) {
             dma_channel_free(obj->spi.dmaOptionsTX.dmaChannel);
             dma_channel_free(obj->spi.dmaOptionsRX.dmaChannel);
             obj->spi.dmaOptionsTX.dmaUsageState = DMA_USAGE_OPPORTUNISTIC;
         }
-        
+
     } else {
         // Interrupt implementation: switch off interrupts
         spi_enable_interrupt(obj, (uint32_t)NULL, false);
     }
-    
+
     // Release sleep mode block
     unblockSleepMode(SPI_LEAST_ACTIVE_SLEEPMODE);
 }

@@ -110,6 +110,8 @@ struct spi_s {
     USART_TypeDef *spi;
     int location;
     uint8_t bits;
+    uint8_t msbf;
+    uint32_t baudrate;
     uint8_t master;
 #if DEVICE_SPI_ASYNCH
     uint32_t event;

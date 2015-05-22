@@ -109,9 +109,7 @@ struct serial_s {
 struct spi_s {
     USART_TypeDef *spi;
     int location;
-    uint32_t baudrate;
     uint8_t bits;
-    uint8_t msbf;
     uint8_t master;
 #if DEVICE_SPI_ASYNCH
     uint32_t event;
@@ -131,11 +129,11 @@ struct lp_timer_s {
 #if DEVICE_SLEEP
 #define NUM_SLEEP_MODES 5
 typedef enum {
-	EM0 = 0,
-	EM1 = 1,
-	EM2 = 2,
-	EM3 = 3,
-	EM4 = 4
+    EM0 = 0,
+    EM1 = 1,
+    EM2 = 2,
+    EM3 = 3,
+    EM4 = 4
 } sleepstate_enum;
 #endif
 

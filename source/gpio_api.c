@@ -17,6 +17,7 @@
 #include "pinmap.h"
 #include "em_cmu.h"
 #include "mbed_assert.h"
+#include "sleepmodes.h"
 
 uint8_t gpio_get_index(gpio_t *obj)
 {
@@ -58,7 +59,7 @@ void gpio_mode(gpio_t *obj, PinMode mode)
 {
     obj->mode = mode; // Update object
     pin_mode(obj->pin, mode); // Update register
-    
+
     //Handle pullup for input
     if(mode == InputPullUp) {
         //Set DOUT

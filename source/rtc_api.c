@@ -32,7 +32,8 @@ static void (*comp0_handler)(void) = NULL;
 
 #define RTC_LEAST_ACTIVE_SLEEPMODE EM2
 
-
+#warning RTC IRQ handler disabled in rtc_api.c. Using IRQ handler in MINAR.
+#if 0
 void RTC_IRQHandler(void)
 {
     uint32_t flags;
@@ -49,6 +50,7 @@ void RTC_IRQHandler(void)
         }
     }
 }
+#endif
 
 void rtc_set_comp0_handler(uint32_t handler)
 {
@@ -58,7 +60,8 @@ void rtc_set_comp0_handler(uint32_t handler)
 void rtc_init(void)
 {
     /* Register that the RTC is used for timekeeping. */
-    rtc_init_real(RTC_INIT_RTC);
+//    rtc_init_real(RTC_INIT_RTC);
+#warning RTC init disabled in rtc_api.c. Using RTC init in MINAR.
 }
 
 

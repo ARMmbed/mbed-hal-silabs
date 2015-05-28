@@ -268,7 +268,7 @@ void spi_enable_interrupt(spi_t *obj, uint32_t handler, uint8_t enable)
     }
 }
 
-void spi_format(spi_t *obj, int bits, int order, int mode, int slave)
+void spi_format(spi_t *obj, int bits, int mode, spi_bitorder_t order, int slave)
 {
     /* Bits: values between 4 and 16 are valid */
     MBED_ASSERT(bits >= 4 && bits <= 16);
@@ -296,7 +296,7 @@ void spi_format(spi_t *obj, int bits, int order, int mode, int slave)
     }
 
     // set bit ordering
-    obj->spi.msbf = (order == 0) ? 1 : 0;
+    obj->spi.msbf = (order == SPI_MSB) ? 1 : 0;
 
     //save state
     uint32_t route = obj->spi.spi->ROUTE;

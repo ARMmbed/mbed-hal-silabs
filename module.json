@@ -19,7 +19,7 @@
     "source/emlib/inc"
   ],
   "dependencies": {
-    "mbed-hal": "~0.2.0",
+    "mbed-hal": "~0.3.0",
     "cmsis-core": "~0.2.0"
   },
   "targetDependencies": {

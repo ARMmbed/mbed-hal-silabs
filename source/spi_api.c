@@ -35,7 +35,7 @@
 static uint16_t fill_word = SPI_FILL_WORD;
 #define SPI_LEAST_ACTIVE_SLEEPMODE EM1
 
-inline CMU_Clock_TypeDef spi_get_clock_tree(spi_t *obj)
+static inline CMU_Clock_TypeDef spi_get_clock_tree(spi_t *obj)
 {
     switch ((int)obj->spi.spi) {
 #ifdef USART0

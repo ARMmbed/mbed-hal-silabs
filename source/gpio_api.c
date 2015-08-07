@@ -19,7 +19,7 @@
 #include "mbed_assert.h"
 #include "sleepmodes.h"
 
-uint8_t gpio_get_index(gpio_t *obj)
+uint8_t gpio_get_index(gpio_t *obj __attribute__((unused)))
 {
     return 0;
 }
@@ -37,47 +37,58 @@ uint32_t gpio_set(PinName pin)
 
 void gpio_init(gpio_t *obj, PinName pin)
 {
-    MBED_ASSERT(pin != NC);
+    if (pin != NC)
+    {
+        CMU_ClockEnable(cmuClock_HFPER, true);
+        CMU_ClockEnable(cmuClock_GPIO, true);
+        obj->mask = gpio_set(pin);
+        obj->port = pin >> 4;
+    }
 
-    CMU_ClockEnable(cmuClock_HFPER, true);
-    CMU_ClockEnable(cmuClock_GPIO, true);
     obj->pin = pin;
-    obj->mask = gpio_set(pin);
-    obj->port = pin >> 4;
 }
 
 void gpio_pin_enable(gpio_t *obj, uint8_t enable)
 {
-    if (enable) {
-        pin_mode(obj->pin, obj->mode);
-    } else {
-        pin_mode(obj->pin, Disabled); // TODO_LP return mode to default value
+    if (obj->pin != NC)
+    {
+        if (enable) {
+            pin_mode(obj->pin, obj->mode);
+        } else {
+            pin_mode(obj->pin, Disabled); // TODO_LP return mode to default value
+        }
     }
 }
 
 void gpio_mode(gpio_t *obj, PinMode mode)
 {
-    obj->mode = mode; // Update object
-    pin_mode(obj->pin, mode); // Update register
+    if (obj->pin != NC)
+    {
+        obj->mode = mode; // Update object
+        pin_mode(obj->pin, mode); // Update register
 
-    //Handle pullup for input
-    if(mode == InputPullUp) {
-        //Set DOUT
-        GPIO->P[obj->port & 0xF].DOUTSET = 1 << (obj->pin & 0xF);
+        //Handle pullup for input
+        if(mode == InputPullUp) {
+            //Set DOUT
+            GPIO->P[obj->port & 0xF].DOUTSET = 1 << (obj->pin & 0xF);
+        }
     }
 }
 
 // Used by DigitalInOut to set correct mode when direction is set
 void gpio_dir(gpio_t *obj, PinDirection direction)
 {
-    obj->dir = direction;
-    switch (direction) {
-        case PIN_INPUT:
-            gpio_mode(obj, PullDefault);
-            break;
-        case PIN_OUTPUT:
-            gpio_mode(obj, PullNone);
-            break;
+    if (obj->pin != NC)
+    {
+        obj->dir = direction;
+        switch (direction) {
+            case PIN_INPUT:
+                gpio_mode(obj, PullDefault);
+                break;
+            case PIN_OUTPUT:
+                gpio_mode(obj, PullNone);
+                break;
+        }
     }
 }
 

@@ -19,8 +19,9 @@
     "source/emlib/inc"
   ],
   "dependencies": {
-    "mbed-hal": "~0.3.0",
-    "cmsis-core": "~0.2.0"
+    "mbed-hal": "~0.6.0",
+    "cmsis-core": "~0.2.0",
+    "swo": "ARMmbed/swo#~1.1.0"
   },
   "targetDependencies": {
     "stk3700": {

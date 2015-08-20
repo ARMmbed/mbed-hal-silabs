@@ -50,6 +50,26 @@ void sleep(void)
     return;
 }
 
+/*
+    Function called by minar when entering sleep.
+    Sleep object can be used to store state.
+*/
+void mbed_enter_sleep(sleep_t* object)
+{
+    (void) object;
+
+    sleep();
+}
+
+/*
+    Function called by minar when exiting sleep.
+    Sleep object can be used for restoring state.
+*/
+void mbed_exit_sleep(sleep_t* object)
+{
+    (void) object;
+}
+
 /**
  * Deep Sleep mode.
  * Enter Energy Mode 2, turning off all high-frequency clocks.

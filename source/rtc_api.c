@@ -24,33 +24,43 @@
 #include "sleep_api.h"
 #include "sleepmodes.h"
 
+#include "swo/swo.h"
+
 static bool rtc_inited = false;
 static time_t time_base = 0;
 static uint32_t useflags = 0;
+static uint32_t overflow_counter = 0;
 
 static void (*comp0_handler)(void) = NULL;
 
 #define RTC_LEAST_ACTIVE_SLEEPMODE EM2
 
-#warning RTC IRQ handler disabled in rtc_api.c. Using IRQ handler in MINAR.
-#if 0
 void RTC_IRQHandler(void)
 {
-    uint32_t flags;
-    flags = RTC_IntGet();
-    if (flags & RTC_IF_OF) {
-        RTC_IntClear(RTC_IF_OF);
-        /* RTC has overflowed (24 bits). Use time_base as software counter for upper 8 bits. */
-        time_base += 1 << 24;
-    }
-    if (flags & RTC_IF_COMP0) {
+    uint32_t flags = RTC_IntGet();
+
+    /* compare match*/
+    if (flags & RTC_IF_COMP0)
+    {
+        // Clear and disable interrupt: it will be re-enabled when we need it again
         RTC_IntClear(RTC_IF_COMP0);
-        if (comp0_handler != NULL) {
-            comp0_handler();
-        }
+        RTC_IntDisable(RTC_IEN_COMP0);
+
+        swoprintf("rtc fired: %lu\r\n", RTC_CounterGet());
+    }
+
+    /* counter overflow */
+    if (flags & BURTC_IF_OF)
+    {
+        overflow_counter++;
+        RTC_IntClear(BURTC_IF_OF);
     }
 }
-#endif
+
+uint32_t rtc_get_overflows(void)
+{
+    return overflow_counter;
+}
 
 void rtc_set_comp0_handler(uint32_t handler)
 {
@@ -60,16 +70,15 @@ void rtc_set_comp0_handler(uint32_t handler)
 void rtc_init(void)
 {
     /* Register that the RTC is used for timekeeping. */
-//    rtc_init_real(RTC_INIT_RTC);
-#warning RTC init disabled in rtc_api.c. Using RTC init in MINAR.
+    rtc_init_real(RTC_INIT_RTC);
 }
-
 
 void rtc_init_real(uint32_t flags)
 {
     useflags |= flags;
 
-    if (!rtc_inited) {
+    if (!rtc_inited)
+    {
         /* Start LFXO and wait until it is stable */
         CMU_OscillatorEnable(cmuOsc_LFXO, true, true);
 
@@ -80,16 +89,22 @@ void rtc_init_real(uint32_t flags)
         /* Enable clock to the interface of the low energy modules */
         CMU_ClockEnable(cmuClock_CORELE, true);
 
-        /* Scale clock to save power */
+        /* Set RTC prescaling */
         CMU_ClockDivSet(cmuClock_RTC, RTC_CLOCKDIV);
 
         /* Initialize RTC */
         RTC_Init_TypeDef init = RTC_INIT_DEFAULT;
-        init.enable = 1;
-        /* Don't use compare register 0 as top value */
-        init.comp0Top = 0;
+        init.enable   = true;   // Start RTC after initialization is complete.
+        init.debugRun = false;  // Halt RTC when debugging.
+        init.comp0Top = false;  // Don't wrap around on COMP0 match: keep on counting
 
-        /* Enable Interrupt from RTC */
+        /*
+            Enable Interrupt for RTC in general.
+            Enable overflow interrupt, disable Comp0 interrupt.
+            Comp0 interrupt is only enabled when a value is set.
+        */
+        RTC_IntClear(RTC_IF_COMP0 | RTC_IF_OF);
+        RTC_IntDisable(RTC_IEN_COMP0);
         RTC_IntEnable(RTC_IEN_OF);
         NVIC_EnableIRQ(RTC_IRQn);
         NVIC_SetVector(RTC_IRQn, (uint32_t)RTC_IRQHandler);
@@ -129,18 +144,16 @@ int rtc_isenabled(void)
 
 time_t rtc_read(void)
 {
-    return (time_t) ((RTC_CounterGet() + time_base) >> RTC_FREQ_SHIFT);
+    uint32_t rtc_count = (overflow_counter << (24 - RTC_FREQ_SHIFT)) | (RTC_CounterGet() >> RTC_FREQ_SHIFT);
+
+    return (time_t) (rtc_count + time_base);
 }
 
 void rtc_write(time_t t)
 {
-    /* We have to check that the RTC did not tick while doing this. */
-    /* If the RTC ticks we just redo this. */
-    uint32_t rtc_count;
-    do {
-        rtc_count = RTC_CounterGet();
-        time_base = (t << RTC_FREQ_SHIFT) - rtc_count;
-    } while (rtc_count != RTC_CounterGet());
+    uint32_t rtc_count = (overflow_counter << (24 - RTC_FREQ_SHIFT)) | (RTC_CounterGet() >> RTC_FREQ_SHIFT);
+
+    time_base = t - rtc_count;
 }
 
 #endif

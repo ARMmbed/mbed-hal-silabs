@@ -20,9 +20,9 @@
 #include "rtc_api.h"
 #include "em_rtc.h"
 
-#define RTC_CLOCKDIV 		cmuClkDiv_8
-#define RTC_CLOCKDIV_INT	8
-#define RTC_FREQ_SHIFT 		12
+#define RTC_CLOCKDIV 		cmuClkDiv_1
+#define RTC_CLOCKDIV_INT	1
+#define RTC_FREQ_SHIFT 		15
 
 
 #define RTC_INIT_LPTIMER (1 << 1)
@@ -37,6 +37,8 @@ void rtc_set_comp0_handler(uint32_t handler);
 
 void rtc_init_real(uint32_t flags);
 void rtc_free_real(uint32_t flags);
+
+uint32_t rtc_get_overflows(void);
 
 #ifdef __cplusplus
 }

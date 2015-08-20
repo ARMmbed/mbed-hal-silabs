@@ -205,8 +205,11 @@ void spi_enable(spi_t *obj, uint8_t enable)
     USART_Enable(obj->spi.spi, (enable ? usartEnable : usartDisable));
 }
 
-void spi_init(spi_t *obj, PinName mosi, PinName miso, PinName clk, PinName cs)
+void spi_init(spi_t *obj, PinName mosi, PinName miso, PinName clk)
 {
+    // CS is currently not part of the mbed HAL
+    PinName cs = NC;
+
     CMU_ClockEnable(cmuClock_HFPER, true);
     spi_preinit(obj, mosi, miso, clk, cs);
     CMU_ClockEnable(spi_get_clock_tree(obj), true);
@@ -268,8 +271,11 @@ void spi_enable_interrupt(spi_t *obj, uint32_t handler, uint8_t enable)
     }
 }
 
-void spi_format(spi_t *obj, int bits, int mode, spi_bitorder_t order, int slave)
+void spi_format(spi_t *obj, int bits, int mode, spi_bitorder_t order)
 {
+    // mbed HAL currently doesn't support SPI Slave mode
+    int slave = 0;
+
     /* Bits: values between 4 and 16 are valid */
     MBED_ASSERT(bits >= 4 && bits <= 16);
     obj->spi.bits = bits;
@@ -940,14 +946,16 @@ void spi_master_transfer_dma(spi_t *obj, void *txdata, void *rxdata, int tx_leng
  * @param[in] tx_length The number of words to transmit
  * @param[in] rx        The buffer to receive
  * @param[in] rx_length The number of words to receive
- * @param[in] bit_width The bit width of buffer words
  * @param[in] event     The logical OR of events to be registered
  * @param[in] handler   SPI interrupt handler
  * @param[in] hint      A suggestion for how to use DMA with this transfer
  */
-void spi_master_transfer(spi_t *obj, void *tx, size_t tx_length, void *rx, size_t rx_length, uint8_t bit_width, uint32_t handler, uint32_t event, DMAUsage hint)
+void spi_master_transfer(spi_t *obj, void *tx, size_t tx_length, void *rx, size_t rx_length, uint32_t handler, uint32_t event, DMAUsage hint)
 {
     if( spi_active(obj) ) return;
+
+    // read bit width from spi_t struct
+    uint8_t bit_width = obj->spi.bits;
 
     /* update fill word if on 9-bit frame size */
     if(obj->spi.bits == 9) fill_word = SPI_FILL_WORD & 0x1FF;

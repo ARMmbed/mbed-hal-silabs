@@ -16,6 +16,7 @@
 #ifndef MBED_OBJECTS_H
 #define MBED_OBJECTS_H
 
+#include "target_config.h"
 #include "PinNames.h"
 #include "PeripheralNames.h"
 #include "PortNames.h"
@@ -23,6 +24,7 @@
 #include "em_dma.h"
 #include "em_cmu.h"
 #include "dma_api_HAL.h"
+#include "device.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -137,6 +139,10 @@ typedef enum {
     EM3 = 3,
     EM4 = 4
 } sleepstate_enum;
+
+struct sleep_s {
+
+};
 #endif
 
 #include "gpio_object.h"

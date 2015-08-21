@@ -24,12 +24,10 @@
 #include "sleep_api.h"
 #include "sleepmodes.h"
 
-#include "swo/swo.h"
-
 static bool rtc_inited = false;
 static time_t time_base = 0;
 static uint32_t useflags = 0;
-static uint32_t overflow_counter = 0;
+static volatile uint32_t overflow_counter = 0;
 
 static void (*comp0_handler)(void) = NULL;
 
@@ -45,8 +43,6 @@ void RTC_IRQHandler(void)
         // Clear and disable interrupt: it will be re-enabled when we need it again
         RTC_IntClear(RTC_IF_COMP0);
         RTC_IntDisable(RTC_IEN_COMP0);
-
-        swoprintf("rtc fired: %lu\r\n", RTC_CounterGet());
     }
 
     /* counter overflow */
@@ -59,7 +55,14 @@ void RTC_IRQHandler(void)
 
 uint32_t rtc_get_overflows(void)
 {
-    return overflow_counter;
+    /*
+        Check if there is a pending overflow interrupt, and add 1 to the return value
+        if there is. The overflow counter will be incremented by the ISR when interrupts
+        are re-enabled again.
+    */
+    uint32_t pending = (RTC_IntGet() & BURTC_IF_OF) ? 1 : 0;
+
+    return overflow_counter + pending;
 }
 
 void rtc_set_comp0_handler(uint32_t handler)

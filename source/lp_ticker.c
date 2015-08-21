@@ -22,8 +22,6 @@
 #include "lp_ticker_api.h"
 #include "sleep_api.h"
 
-#include "swo/swo.h"
-
 static uint32_t compare_cache = 0xFFFFFFFF;
 
 void lp_ticker_init()
@@ -37,11 +35,7 @@ void lp_ticker_init()
 
 uint32_t lp_ticker_read()
 {
-    uint32_t ticker = (rtc_get_overflows() << 24) | RTC_CounterGet();
-
-    swoprintf("lp_ticker_read: %lu\r\n", ticker);
-
-    return ticker;
+    return (rtc_get_overflows() << 24) | RTC_CounterGet();
 }
 
 void lp_ticker_set_interrupt(uint32_t before_ticks, uint32_t interrupt_ticks)
@@ -81,8 +75,6 @@ void lp_ticker_set_interrupt(uint32_t before_ticks, uint32_t interrupt_ticks)
             compare_cache = interrupt_ticks;
         }
 
-        swoprintf("rtc set: %lu\r\n", timestamp_ticks);
-
         /* Set interrupt */
         RTC_FreezeEnable(true);
         RTC_CompareSet(0, timestamp_ticks);
@@ -99,8 +91,6 @@ uint32_t lp_ticker_get_overflows_counter(void)
 
 uint32_t lp_ticker_get_compare_match(void)
 {
-    swoprintf("lp_ticker_get_compare_match: %lu\r\n", compare_cache);
-
     return compare_cache;
 }
 

@@ -24,6 +24,20 @@
 
 static uint32_t compare_cache = 0xFFFFFFFF;
 
+static bool timeIsInPeriod(uint32_t start, uint32_t time, uint32_t stop)
+{
+    if (((start < time ) && (time  < stop )) ||
+        ((stop  < start) && (start < time )) ||
+        ((time  < stop ) && (stop  < start)))
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
 void lp_ticker_init()
 {
     rtc_init_real(RTC_INIT_LPTIMER);
@@ -35,52 +49,45 @@ void lp_ticker_init()
 
 uint32_t lp_ticker_read()
 {
-    return (rtc_get_overflows() << 24) | RTC_CounterGet();
+    uint32_t ticker = (rtc_get_overflows() << 24) | RTC_CounterGet();
+
+    return ticker;
 }
 
 void lp_ticker_set_interrupt(uint32_t before_ticks, uint32_t interrupt_ticks)
 {
     uint32_t timestamp_ticks;
     uint32_t now_ticks = lp_ticker_read();
+    uint32_t rtc_ticks = RTC_CounterGet();
 
     /*
-        Only set interrupt if the time is in the future.
+        RTC only has 24 bit resolution. If the interrupt is set farther into the
+        future than the RTC can handle, set the maximum interrupt time and rely
+        on caller to reset the interrupt.
     */
-    if (((before_ticks    < now_ticks      ) && (now_ticks       < interrupt_ticks)) ||
-        ((interrupt_ticks < before_ticks   ) && (before_ticks    < now_ticks      )) ||
-        ((now_ticks       < interrupt_ticks) && (interrupt_ticks < before_ticks   )))
+    if ((interrupt_ticks - now_ticks) > 0xFFFFFFUL)
     {
-        uint32_t rtc_ticks = RTC_CounterGet();
+        // set maximum interrupt time
+        timestamp_ticks = rtc_ticks - 1;
 
-        /*
-            RTC only has 24 bit resolution. If the interrupt is set farther into the
-            future than the RTC can handle, set the maximum interrupt time and rely
-            on caller to reset the interrupt.
-        */
-        if ((interrupt_ticks - now_ticks) > 0xFFFFFFUL)
-        {
-            // set maximum interrupt time
-            timestamp_ticks = rtc_ticks - 1;
-
-            // store 32 bit time for later comparison
-            // interrupt happens after overflow, add (1 << 24) to now_ticks
-            compare_cache = ((now_ticks + 0x01000000UL) & 0xFF000000UL) | timestamp_ticks;
-        }
-        else
-        {
-            // use the passed interrupt time
-            timestamp_ticks = interrupt_ticks & 0xFFFFFFUL;
-
-            // store 32 bit time for later comparison
-            compare_cache = interrupt_ticks;
-        }
-
-        /* Set interrupt */
-        RTC_FreezeEnable(true);
-        RTC_CompareSet(0, timestamp_ticks);
-        RTC_IntEnable(RTC_IEN_COMP0);
-        RTC_FreezeEnable(false);
+        // store 32 bit time for later comparison
+        // interrupt happens after overflow, add (1 << 24) to now_ticks
+        compare_cache = ((now_ticks + 0x01000000UL) & 0xFF000000UL) | timestamp_ticks;
     }
+    else
+    {
+        // use the passed interrupt time
+        timestamp_ticks = interrupt_ticks & 0xFFFFFFUL;
+
+        // store 32 bit time for later comparison
+        compare_cache = interrupt_ticks;
+    }
+
+    /* Set interrupt */
+    RTC_FreezeEnable(true);
+    RTC_CompareSet(0, timestamp_ticks);
+    RTC_IntEnable(RTC_IEN_COMP0);
+    RTC_FreezeEnable(false);
 }
 
 uint32_t lp_ticker_get_overflows_counter(void)
@@ -94,24 +101,19 @@ uint32_t lp_ticker_get_compare_match(void)
     return compare_cache;
 }
 
-void lp_ticker_sleep_until(uint32_t now, uint32_t time)
+void lp_ticker_sleep_until(uint32_t now, uint32_t until)
 {
-    lp_ticker_set_interrupt(now, time);
-    sleep_t sleep_obj;
-    mbed_enter_sleep(&sleep_obj);
-    mbed_exit_sleep(&sleep_obj);
-}
+    // find minimum sleep time
+    uint32_t minimum_sleep = lp_ticker_read() + MINAR_PLATFORM_MINIMUM_SLEEP;
 
-#if 0
-inline void lp_ticker_disable_interrupt()
-{
-    RTC_IntDisable(RTC_IEN_COMP0);
+    // only sleep if wake up time is after the minimum sleep period
+    if (timeIsInPeriod(now, minimum_sleep, until))
+    {
+        lp_ticker_set_interrupt(now, until);
+        sleep_t sleep_obj;
+        mbed_enter_sleep(&sleep_obj);
+        mbed_exit_sleep(&sleep_obj);
+    }
 }
-
-inline void lp_ticker_clear_interrupt()
-{
-    RTC_IntClear(RTC_IEN_COMP0);
-}
-#endif
 
 #endif

@@ -147,14 +147,16 @@ int rtc_isenabled(void)
 
 time_t rtc_read(void)
 {
-    uint32_t rtc_count = (overflow_counter << (24 - RTC_FREQ_SHIFT)) | (RTC_CounterGet() >> RTC_FREQ_SHIFT);
+    uint32_t overflows = rtc_get_overflows(); // use function to check for unhandled overflow
+    uint32_t rtc_count = (overflows << (24 - RTC_FREQ_SHIFT)) | (RTC_CounterGet() >> RTC_FREQ_SHIFT);
 
     return (time_t) (rtc_count + time_base);
 }
 
 void rtc_write(time_t t)
 {
-    uint32_t rtc_count = (overflow_counter << (24 - RTC_FREQ_SHIFT)) | (RTC_CounterGet() >> RTC_FREQ_SHIFT);
+    uint32_t overflows = rtc_get_overflows(); // use function to check for unhandled overflow
+    uint32_t rtc_count = (overflows << (24 - RTC_FREQ_SHIFT)) | (RTC_CounterGet() >> RTC_FREQ_SHIFT);
 
     time_base = t - rtc_count;
 }

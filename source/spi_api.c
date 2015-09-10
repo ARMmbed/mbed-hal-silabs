@@ -363,7 +363,7 @@ int spi_master_write(spi_t *obj, int value)
 
     /* Wait for transmission of last byte */
     while (!(obj->spi.spi->STATUS & USART_STATUS_TXC)) {
-        sleep(); // TODO_LP this might break other code, write should be separate from read?
+        // TODO: enable interrupts and sleep
     }
 
     return spi_read(obj);

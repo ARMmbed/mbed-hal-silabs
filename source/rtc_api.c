@@ -82,11 +82,27 @@ void rtc_init_real(uint32_t flags)
 
     if (!rtc_inited)
     {
-        /* Start LFXO and wait until it is stable */
+#if (LOW_ENERGY_CLOCK_SOURCE == LFXO )
+        /* Start LF clock source and wait until it is stable */
         CMU_OscillatorEnable(cmuOsc_LFXO, true, true);
 
         /* Route the LFXO clock to the RTC */
-        CMU_ClockSelectSet(cmuClock_LFA, LOW_ENERGY_CLOCK_SOURCE);
+        CMU_ClockSelectSet(cmuClock_LFA, cmuSelect_LFXO);
+#elif (LOW_ENERGY_CLOCK_SOURCE == HFRCO )
+        /* Start LF clock source and wait until it is stable */
+        CMU_OscillatorEnable(cmuOsc_HFRCO, true, true);
+
+        /* Route the LFRCO clock to the RTC */
+        CMU_ClockSelectSet(cmuClock_LFA, cmuSelect_LFRCO);
+#elif (LOW_ENERGY_CLOCK_SOURCE == HFRCO )
+        /* Start LF clock source and wait until it is stable */
+        CMU_OscillatorEnable(cmuOsc_HFRCO, true, true);
+
+        /* Route the HFRCO clock to the RTC */
+        CMU_ClockSelectSet(cmuClock_LFA, cmuSelect_ULFRCO);
+#else
+#error "Unknown low frequency clock"
+#endif
         CMU_ClockEnable(cmuClock_RTC, true);
 
         /* Enable clock to the interface of the low energy modules */

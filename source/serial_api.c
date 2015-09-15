@@ -788,8 +788,10 @@ void serial_putc(serial_t *obj, int c)
      * need to use serial_writable(). */
     if(LEUART_REF_VALID(obj->serial.periph.leuart)) {
         LEUART_Tx(obj->serial.periph.leuart, (uint8_t)(c));
+        while((obj->serial.periph.leuart->STATUS & LEUART_STATUS_TXC) == 0);
     } else {
         USART_Tx(obj->serial.periph.uart, (uint8_t)(c));
+        while((obj->serial.periph.uart->STATUS & USART_STATUS_TXC) == 0);
     }
 }
 

@@ -35,7 +35,7 @@
 #include "dma_api_HAL.h"
 #include "dma_api.h"
 #include "sleep_api.h"
-#include "buffer.h"
+#include "mbed-hal/buffer.h"
 #include "sleepmodes.h"
 
 #define SERIAL_LEAST_ACTIVE_SLEEPMODE EM1

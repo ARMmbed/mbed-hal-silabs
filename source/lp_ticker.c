@@ -44,7 +44,7 @@ void lp_ticker_init()
 
     // set compare to all ones: if we set it at 0 (in the past)
     // minar will think it has wrapped
-    RTC_CompareSet(0, 0xFFFFFFFF);
+    RTC_CompareSet(0, 0x00FFFFFF);
 }
 
 uint32_t lp_ticker_read()

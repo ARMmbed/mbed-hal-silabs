@@ -413,7 +413,7 @@ void i2c_slave_address(i2c_t *obj, int idx, uint32_t address, uint32_t mask)
 #include "dma_api_HAL.h"
 #include "dma_api.h"
 #include "sleep_api.h"
-#include "buffer.h"
+#include "mbed-hal/buffer.h"
 
 /** Start i2c asynchronous transfer.
  *  @param obj     The I2C object

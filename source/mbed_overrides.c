@@ -35,11 +35,9 @@ void mbed_sdk_init()
     /* Set up the clock sources for this chip */
 #if( CORE_CLOCK_SOURCE == HFXO)
     CMU_ClockSelectSet(cmuClock_HF, cmuSelect_HFXO);
-    CMU_ClockSelectSet(cmuClock_HFPER, cmuSelect_HFXO);
     SystemHFXOClockSet(HFXO_FREQUENCY);
 #elif( CORE_CLOCK_SOURCE == HFRCO)
     CMU_ClockSelectSet(cmuClock_HF, cmuSelect_HFRCO);
-    CMU_ClockSelectSet(cmuClock_HFPER, cmuSelect_HFRCO);
     CMU_HFRCOBandSet(HFRCO_FREQUENCY);
 #else
 #error "Core clock selection not valid (mbed_overrides.c)"

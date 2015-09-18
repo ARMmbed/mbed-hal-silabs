@@ -22,6 +22,9 @@
 #include "lp_ticker_api.h"
 #include "sleep_api.h"
 
+#define RTC_NUM_BITS                (24)
+#define RTC_BITMASK                 (0x00FFFFFFUL)
+
 static uint32_t compare_cache = 0xFFFFFFFF;
 
 static bool timeIsInPeriod(uint32_t start, uint32_t time, uint32_t stop)
@@ -44,31 +47,29 @@ void lp_ticker_init()
 
     // set compare to all ones: if we set it at 0 (in the past)
     // minar will think it has wrapped
-    RTC_CompareSet(0, 0x00FFFFFF);
+    RTC_CompareSet(0, RTC_BITMASK);
 }
 
 uint32_t lp_ticker_read()
 {
-    uint32_t ticker = (rtc_get_overflows() << 24) | RTC_CounterGet();
-
-    return ticker;
+    return rtc_get_32bit();
 }
 
-void lp_ticker_set_interrupt(uint32_t before_ticks, uint32_t interrupt_ticks)
+void lp_ticker_set_interrupt(uint32_t now_ticks, uint32_t interrupt_ticks)
 {
     uint32_t timestamp_ticks;
-    uint32_t now_ticks = lp_ticker_read();
-    uint32_t rtc_ticks = RTC_CounterGet();
+    /* TODO: Figure out why ARM re-reads this instead of using the supplied time */
+    now_ticks = lp_ticker_read();
 
     /*
-        RTC only has 24 bit resolution. If the interrupt is set farther into the
-        future than the RTC can handle, set the maximum interrupt time and rely
-        on caller to reset the interrupt.
-    */
-    if ((interrupt_ticks - now_ticks) > 0xFFFFFFUL)
+     * RTC has only got 24 bit resolution. If an interrupt farther into the future
+     * than the RTC can handle is requested, set the maximum interrupt time and rely
+     * on caller to reset the interrupt.
+     */
+    if ((interrupt_ticks - now_ticks) > RTC_BITMASK)
     {
         // set maximum interrupt time
-        timestamp_ticks = rtc_ticks - 1;
+        timestamp_ticks = (now_ticks & RTC_BITMASK) - 1;
 
         // store 32 bit time for later comparison
         // interrupt happens after overflow, add (1 << 24) to now_ticks
@@ -77,7 +78,7 @@ void lp_ticker_set_interrupt(uint32_t before_ticks, uint32_t interrupt_ticks)
     else
     {
         // use the passed interrupt time
-        timestamp_ticks = interrupt_ticks & 0xFFFFFFUL;
+        timestamp_ticks = interrupt_ticks & RTC_BITMASK;
 
         // store 32 bit time for later comparison
         compare_cache = interrupt_ticks;
@@ -92,7 +93,7 @@ void lp_ticker_set_interrupt(uint32_t before_ticks, uint32_t interrupt_ticks)
 
 uint32_t lp_ticker_get_overflows_counter(void)
 {
-    // remove the lowest 8 bit since these are being used by lp_ticker_read
+    /* Remove the part of the overflow that is accounted for by lp_ticker_read */
     return rtc_get_overflows() >> 8;
 }
 

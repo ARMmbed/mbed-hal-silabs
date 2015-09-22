@@ -1,6 +1,6 @@
 {
   "name": "mbed-hal-silabs",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "description": "mbed low-level Hardware Abstraction Layer implementation for Silicon Labs' microcontrollers",
   "keywords": [
     "mbed",
@@ -24,6 +24,9 @@
   "targetDependencies": {
     "stk3700": {
       "mbed-hal-efm32gg-stk3700": "~0.2.0"
+    },
+    "efm32hg-stk": {
+      "mbed-hal-efm32hg-stk": "~0.0.1"
     },
     "watch": {
       "mbed-hal-efm32gg-watch": "~0.2.0"

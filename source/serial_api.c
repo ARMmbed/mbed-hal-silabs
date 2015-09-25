@@ -533,8 +533,6 @@ void serial_baud(serial_t *obj, int baudrate)
             MBED_ASSERT((baudrate <= (LEUART_HF_REF_FREQ >> 1)) && (baudrate > (LEUART_HF_REF_FREQ >> 10)));
 
             CMU_ClockSelectSet(cmuClock_LFB, cmuSelect_CORELEDIV2);
-            CMU_ClockEnable(cmuClock_LFB, true);
-            CMU_ClockSelectSet(serial_get_clock(obj), cmuSelect_CORELEDIV2);
             uint8_t divisor = 1;
 
             if(baudrate > (LEUART_HF_REF_FREQ >> 7)){
@@ -550,8 +548,6 @@ void serial_baud(serial_t *obj, int baudrate)
             LEUART_BaudrateSet(obj->serial.periph.leuart, LEUART_HF_REF_FREQ/divisor, (uint32_t)baudrate);
         }else{
             CMU_ClockSelectSet(cmuClock_LFB, cmuSelect_LFXO);
-            CMU_ClockEnable(cmuClock_LFB, true);
-            CMU_ClockSelectSet(serial_get_clock(obj), cmuSelect_LFXO);
             CMU_ClockDivSet(serial_get_clock(obj), 1);
             LEUART_BaudrateSet(obj->serial.periph.leuart, LEUART_LF_REF_FREQ, (uint32_t)baudrate);
         }

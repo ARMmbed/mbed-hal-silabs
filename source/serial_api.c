@@ -410,13 +410,21 @@ void serial_preinit(serial_t *obj, PinName tx, PinName rx)
 void serial_enable_pins(serial_t *obj, uint8_t enable)
 {
     if (enable) {
-        /* Configure GPIO pins*/
-        pin_mode(obj->serial.rx_pin, Input);
-        /* 0x10 sets DOUT. Prevents false start. */
-        pin_mode(obj->serial.tx_pin, PushPull | 0x10);
+        /* Configure GPIO pins. Either TX or RX may be NC. */
+        if(obj->serial.rx_pin != NC) {
+            pin_mode(obj->serial.rx_pin, Input);
+        }
+        if(obj->serial.tx_pin != NC) {
+            /* 0x10 sets DOUT. Prevents false start. */
+            pin_mode(obj->serial.tx_pin, PushPull | 0x10);
+        }
     } else {
-        pin_mode(obj->serial.rx_pin, Disabled);
-        pin_mode(obj->serial.tx_pin, Disabled);
+        if(obj->serial.rx_pin != NC) {
+            pin_mode(obj->serial.rx_pin, Disabled);
+        }
+        if(obj->serial.tx_pin != NC) {
+            pin_mode(obj->serial.tx_pin, Disabled);
+        }
     }
 }
 
@@ -429,14 +437,10 @@ void serial_init(serial_t *obj, PinName tx, PinName rx)
 #ifdef LEUART_USING_LFXO
         //set to use LFXO
         CMU_ClockSelectSet(cmuClock_LFB, cmuSelect_LFXO);
-        CMU_ClockEnable(cmuClock_LFB, true);
-        CMU_ClockSelectSet(serial_get_clock(obj), cmuSelect_LFXO);
         CMU_ClockEnable(cmuClock_CORELE, true);
 #else
         //set to use high-speed clock
         CMU_ClockSelectSet(cmuClock_LFB, cmuSelect_CORELEDIV2);
-        CMU_ClockEnable(cmuClock_LFB, true);
-        CMU_ClockSelectSet(serial_get_clock(obj), cmuSelect_CORELEDIV2);
 #endif
     }
 
@@ -450,13 +454,30 @@ void serial_init(serial_t *obj, PinName tx, PinName rx)
         serial_baud(obj, 115200);
     }
 
-    /* Enable pins for UART at correct location */
+    /* Enable pins for UART at correct location. Either TX or RX may be NC. */
+    uint32_t route_reg, ctrl_reg = 0;
     if(LEUART_REF_VALID(obj->serial.periph.leuart)) {
-        obj->serial.periph.leuart->ROUTE = LEUART_ROUTE_RXPEN | LEUART_ROUTE_TXPEN | (obj->serial.location << _LEUART_ROUTE_LOCATION_SHIFT);
+        route_reg = (obj->serial.location << _LEUART_ROUTE_LOCATION_SHIFT);
+        if(obj->serial.tx_pin != NC) {
+            route_reg |= LEUART_ROUTE_TXPEN;
+            ctrl_reg |= LEUART_CTRL_TXDMAWU;
+        }
+        if(obj->serial.rx_pin != NC) {
+            route_reg |= LEUART_ROUTE_RXPEN;
+            ctrl_reg |= LEUART_CTRL_RXDMAWU;
+        }
+        obj->serial.periph.leuart->ROUTE = route_reg;
         obj->serial.periph.leuart->IFC = LEUART_IFC_TXC;
-        obj->serial.periph.leuart->CTRL |= LEUART_CTRL_RXDMAWU | LEUART_CTRL_TXDMAWU;
+        obj->serial.periph.leuart->CTRL |= ctrl_reg;
     } else {
-        obj->serial.periph.uart->ROUTE = USART_ROUTE_RXPEN | USART_ROUTE_TXPEN | (obj->serial.location << _USART_ROUTE_LOCATION_SHIFT);
+        route_reg = (obj->serial.location << _USART_ROUTE_LOCATION_SHIFT);
+        if(obj->serial.tx_pin != NC) {
+            route_reg |= USART_ROUTE_TXPEN;
+        }
+        if(obj->serial.rx_pin != NC) {
+            route_reg |= USART_ROUTE_RXPEN;
+        }
+        obj->serial.periph.uart->ROUTE = route_reg;
         obj->serial.periph.uart->IFC = USART_IFC_TXC;
     }
 
@@ -1702,14 +1723,14 @@ int serial_irq_handler_asynch(serial_t *obj)
             }
         }else{
             if(obj->serial.periph.uart->IEN & USART_IEN_TXC){
-                USART_IntDisable(obj->serial.periph.leuart,USART_IEN_TXC);
+                USART_IntDisable(obj->serial.periph.uart,USART_IEN_TXC);
                 /* Clean up */
                 serial_dma_irq_fired[obj->serial.dmaOptionsTX.dmaChannel] = false;
                 serial_tx_abort_asynch(obj);
                 /* Notify CPP land of completion */
                 return SERIAL_EVENT_TX_COMPLETE & obj->serial.events;
             }else{
-                USART_IntEnable(obj->serial.periph.leuart,USART_IEN_TXC);
+                USART_IntEnable(obj->serial.periph.uart,USART_IEN_TXC);
             }
         }
     } else {

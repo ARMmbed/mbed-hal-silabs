@@ -859,6 +859,8 @@ void serial_irq_set(serial_t *obj, SerialIrq irq, uint32_t enable)
  */
 int serial_getc(serial_t *obj)
 {
+    MBED_ASSERT(obj->serial.rx_pin != NC);
+
     /* Emlib USART_Rx blocks until data is available, so we don't need to use
      * serial_readable(). Use USART_RxDataGet() to read register directly. */
     if(LEUART_REF_VALID(obj->serial.periph.leuart)) {
@@ -873,6 +875,8 @@ int serial_getc(serial_t *obj)
  */
 void serial_putc(serial_t *obj, int c)
 {
+    MBED_ASSERT(obj->serial.tx_pin != NC);
+
     /* Emlib USART_Tx blocks until buffer is writable (non-full), so we don't
      * need to use serial_writable(). */
     if(LEUART_REF_VALID(obj->serial.periph.leuart)) {
@@ -1311,6 +1315,8 @@ int serial_tx_asynch(serial_t *obj, void *tx, size_t tx_length, uint8_t tx_width
 {
     // Check that a buffer has indeed been set up
     MBED_ASSERT(tx != (void*)0);
+    MBED_ASSERT(obj->serial.tx_pin != NC);
+
     if(tx_length == 0) return 0;
 
     // Set up buffer
@@ -1377,6 +1383,8 @@ void serial_rx_asynch(serial_t *obj, void *rx, size_t rx_length, uint8_t rx_widt
 {
     // Check that a buffer has indeed been set up
     MBED_ASSERT(rx != (void*)0);
+    MBED_ASSERT(obj->serial.rx_pin != NC);
+
     if(rx_length == 0) return;
 
     // Set up buffer

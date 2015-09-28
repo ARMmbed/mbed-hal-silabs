@@ -1,18 +1,25 @@
-/* mbed Microcontroller Library
- * Copyright (c) 2006-2013 ARM Limited
+/***************************************************************************//**
+ * @file i2c_api.c
+ *******************************************************************************
+ * @section License
+ * <b>(C) Copyright 2014-2015 Silicon Labs, http://www.silabs.com</b>
+ *******************************************************************************
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *
+ ******************************************************************************/
 
 #include "device.h"
 #include "clocking.h"
@@ -185,7 +192,7 @@ void i2c_frequency(i2c_t *obj, int hz)
 {
     /* Set frequency. As the second argument is 0,
      *  HFPER clock frequency is used as reference freq */
-    I2C_BusFreqSet(obj->i2c.i2c, 0, hz, i2cClockHLRStandard);
+    I2C_BusFreqSet(obj->i2c.i2c, REFERENCE_FREQUENCY, hz, i2cClockHLRStandard);
 }
 
 /* Creates a start condition on the I2C bus */
@@ -401,6 +408,9 @@ int i2c_slave_write(i2c_t *obj, const char *data, int length)
 
 void i2c_slave_address(i2c_t *obj, int idx, uint32_t address, uint32_t mask)
 {
+    (void)idx;
+    (void)mask;
+
     obj->i2c.i2c->SADDR = address;
     obj->i2c.i2c->SADDRMASK = 0xFE;//mask;
 }
@@ -428,6 +438,9 @@ void i2c_slave_address(i2c_t *obj, int idx, uint32_t address, uint32_t mask)
  */
 void i2c_transfer_asynch(i2c_t *obj, void *tx, size_t tx_length, void *rx, size_t rx_length, uint32_t address, uint32_t stop, uint32_t handler, uint32_t event, DMAUsage hint)
 {
+    (void)stop;
+    (void)hint;
+
     I2C_TransferReturn_TypeDef retval;
     if(i2c_active(obj)) return;
     if((tx_length == 0) && (rx_length == 0)) return;
@@ -440,7 +453,7 @@ void i2c_transfer_asynch(i2c_t *obj, void *tx, size_t tx_length, void *rx, size_
     if((tx_length > 0) && (rx_length == 0)) {
         obj->i2c.xfer.flags = I2C_FLAG_WRITE;
         //Store buffer info
-        obj->i2c.xfer.buf[0].data = tx;
+        obj->i2c.xfer.buf[0].data = (void *)tx;
         obj->i2c.xfer.buf[0].len  = (uint16_t) tx_length;
     } else if ((tx_length == 0) && (rx_length > 0)) {
         obj->i2c.xfer.flags = I2C_FLAG_READ;
@@ -450,7 +463,7 @@ void i2c_transfer_asynch(i2c_t *obj, void *tx, size_t tx_length, void *rx, size_
     } else if ((tx_length > 0) && (rx_length > 0)) {
         obj->i2c.xfer.flags = I2C_FLAG_WRITE_READ;
         //Store buffer info
-        obj->i2c.xfer.buf[0].data = tx;
+        obj->i2c.xfer.buf[0].data = (void *)tx;
         obj->i2c.xfer.buf[0].len  = (uint16_t) tx_length;
         obj->i2c.xfer.buf[1].data = rx;
         obj->i2c.xfer.buf[1].len  = (uint16_t) rx_length;

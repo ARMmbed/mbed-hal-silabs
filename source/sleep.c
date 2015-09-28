@@ -1,18 +1,25 @@
-/* mbed Microcontroller Library
- * Copyright (c) 2006-2013 ARM Limited
+/***************************************************************************//**
+ * @file sleep.c
+ *******************************************************************************
+ * @section License
+ * <b>(C) Copyright 2014-2015 Silicon Labs, http://www.silabs.com</b>
+ *******************************************************************************
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *
+ ******************************************************************************/
 
 #include "device.h"
 #if DEVICE_SLEEP
@@ -35,17 +42,20 @@ uint32_t sleep_block_counter[NUM_SLEEP_MODES] = {0};
 void sleep(void)
 {
     if (sleep_block_counter[0] > 0) {
-        // Blocked everything below EM0, so just return
+        /* Blocked everything below EM0, so just return */
         return;
     } else if (sleep_block_counter[1] > 0) {
-        // Blocked everything below EM1, enter EM1
+        /* Blocked everything below EM1, enter EM1 */
         EMU_EnterEM1();
     } else if (sleep_block_counter[2] > 0) {
-        // Blocked everything below EM2, enter EM2
+        /* Blocked everything below EM2, enter EM2 */
         EMU_EnterEM2(true);
     } else if (sleep_block_counter[3] > 0) {
-        // Blocked everything below EM3, enter EM3
+        /* Blocked everything below EM3, enter EM3 */
         EMU_EnterEM3(true);
+    } else{
+        /* Nothing is blocked, enter EM4 */
+        EMU_EnterEM4();
     }
     return;
 }

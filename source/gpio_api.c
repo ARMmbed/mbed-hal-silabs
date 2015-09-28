@@ -1,27 +1,54 @@
-/* mbed Microcontroller Library
- * Copyright (c) 2006-2013 ARM Limited
+/***************************************************************************//**
+ * @file gpio_api.c
+ *******************************************************************************
+ * @section License
+ * <b>(C) Copyright 2014-2015 Silicon Labs, http://www.silabs.com</b>
+ *******************************************************************************
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *
+ ******************************************************************************/
+
 #include "gpio_api.h"
 #include "pinmap.h"
 #include "em_cmu.h"
 #include "mbed_assert.h"
 #include "sleepmodes.h"
 
-uint8_t gpio_get_index(gpio_t *obj __attribute__((unused)))
+
+void gpio_write(gpio_t *obj, int value)
 {
-    return 0;
+    if (value) {
+        GPIO_PinOutSet((GPIO_Port_TypeDef)(obj->pin >> 4 & 0xF), obj->pin & 0xF); // Pin number encoded in first four bits of obj->pin
+    } else {
+        GPIO_PinOutClear((GPIO_Port_TypeDef)(obj->pin >> 4 & 0xF), obj->pin & 0xF);
+    }
+}
+
+int gpio_read(gpio_t *obj)
+{
+    if (obj->dir == PIN_INPUT) {
+        return GPIO_PinInGet((GPIO_Port_TypeDef)(obj->pin >> 4 & 0xF), obj->pin & 0xF); // Pin number encoded in first four bits of obj->pin
+    } else {
+        return GPIO_PinOutGet((GPIO_Port_TypeDef)(obj->pin >> 4 & 0xF), obj->pin & 0xF);
+    }
+}
+
+int gpio_is_connected(const gpio_t *obj)
+{
+    return (obj->pin | 0xFFFFFF00U) != (uint32_t)NC;
 }
 
 /*
@@ -37,14 +64,10 @@ uint32_t gpio_set(PinName pin)
 
 void gpio_init(gpio_t *obj, PinName pin)
 {
-    if (pin != NC)
-    {
-        CMU_ClockEnable(cmuClock_HFPER, true);
-        CMU_ClockEnable(cmuClock_GPIO, true);
-        obj->mask = gpio_set(pin);
-        obj->port = pin >> 4;
-    }
+    MBED_ASSERT(pin != NC);
 
+    CMU_ClockEnable(cmuClock_HFPER, true);
+    CMU_ClockEnable(cmuClock_GPIO, true);
     obj->pin = pin;
 }
 
@@ -62,33 +85,60 @@ void gpio_pin_enable(gpio_t *obj, uint8_t enable)
 
 void gpio_mode(gpio_t *obj, PinMode mode)
 {
-    if (obj->pin != NC)
-    {
-        obj->mode = mode; // Update object
-        pin_mode(obj->pin, mode); // Update register
-
-        //Handle pullup for input
-        if(mode == InputPullUp) {
+        if(obj->dir == PIN_INPUT) {
+        switch(mode) {
+            case PullDefault:
+                mode = Input;
+                break;
+            case PullUp:
+                mode = InputPullUp;
+                break;
+            case PullDown:
+                mode = InputPullDown;
+                break;
+            default:
+                break;
+        }
+        
+        //Handle DOUT setting
+        if((mode & 0x10) != 0) {
             //Set DOUT
-            GPIO->P[obj->port & 0xF].DOUTSET = 1 << (obj->pin & 0xF);
+            GPIO->P[(obj->pin >> 4) & 0xF].DOUTSET = 1 << (obj->pin & 0xF);
+        } else {
+            //Clear DOUT
+            GPIO->P[(obj->pin >> 4) & 0xF].DOUTCLR = 1 << (obj->pin & 0xF);
+        }
+    } else {
+        switch(mode) {
+            case PullDefault:
+                mode = PushPull;
+                break;
+            case PullUp:
+                mode = WiredAndPullUp;
+                break;
+            case PullDown:
+                mode = WiredOrPullDown;
+                break;
+            default:
+                break;
         }
     }
+    
+    obj->mode = mode; // Update object
+    pin_mode(obj->pin, mode); // Update register
 }
 
 // Used by DigitalInOut to set correct mode when direction is set
 void gpio_dir(gpio_t *obj, PinDirection direction)
 {
-    if (obj->pin != NC)
-    {
-        obj->dir = direction;
-        switch (direction) {
-            case PIN_INPUT:
-                gpio_mode(obj, PullDefault);
-                break;
-            case PIN_OUTPUT:
-                gpio_mode(obj, PullNone);
-                break;
-        }
+    obj->dir = direction;
+    switch (direction) {
+        case PIN_INPUT:
+            gpio_mode(obj, PullDefault);
+            break;
+        case PIN_OUTPUT:
+            gpio_mode(obj, PullNone);
+            break;
     }
 }
 

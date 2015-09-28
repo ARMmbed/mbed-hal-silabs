@@ -1,18 +1,26 @@
-/* mbed Microcontroller Library
- * Copyright (c) 2006-2013 ARM Limited
+/***************************************************************************//**
+ * @file spi_api.c
+ *******************************************************************************
+ * @section License
+ * <b>(C) Copyright 2014-2015 Silicon Labs, http://www.silabs.com</b>
+ *******************************************************************************
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *
+ ******************************************************************************/
+
 #include "device.h"
 #include "clocking.h"
 #if DEVICE_SPI
@@ -32,10 +40,10 @@
 #include "sleep_api.h"
 #include "sleepmodes.h"
 
-static uint16_t fill_word = SPI_FILL_WORD;
+static uint16_t fill_word = (uint16_t)SPI_FILL_WORD;
 #define SPI_LEAST_ACTIVE_SLEEPMODE EM1
 
-static inline CMU_Clock_TypeDef spi_get_clock_tree(spi_t *obj)
+inline CMU_Clock_TypeDef spi_get_clock_tree(spi_t *obj)
 {
     switch ((int)obj->spi.spi) {
 #ifdef USART0
@@ -94,13 +102,8 @@ static void usart_init(spi_t *obj, uint32_t baudrate, USART_Databits_TypeDef dat
     init.baudrate = baudrate;
     init.databits = databits;
     init.master = master;
+    init.msbf	= 1;
     init.clockMode = clockMode;
-
-    // use stored value for msbf
-    init.msbf   = obj->spi.msbf;
-
-    // update baudrate
-    obj->spi.baudrate = baudrate;
 
     /* Determine the reference clock, because the correct clock is not set up at init time */
     init.refFreq = REFERENCE_FREQUENCY;
@@ -213,7 +216,7 @@ void spi_init(spi_t *obj, PinName mosi, PinName miso, PinName clk)
     CMU_ClockEnable(cmuClock_HFPER, true);
     spi_preinit(obj, mosi, miso, clk, cs);
     CMU_ClockEnable(spi_get_clock_tree(obj), true);
-    usart_init(obj, 1000000, usartDatabits8, true, usartClockMode0);
+    usart_init(obj, 100000, usartDatabits8, true, usartClockMode0);
 
     spi_enable_pins(obj, true, mosi, miso, clk, cs);
     spi_enable(obj, true);
@@ -273,6 +276,8 @@ void spi_enable_interrupt(spi_t *obj, uint32_t handler, uint8_t enable)
 
 void spi_format(spi_t *obj, int bits, int mode, spi_bitorder_t order)
 {
+    (void)order;
+
     // mbed HAL currently doesn't support SPI Slave mode
     int slave = 0;
 
@@ -301,16 +306,12 @@ void spi_format(spi_t *obj, int bits, int mode, spi_bitorder_t order)
             clockMode = usartClockMode0;
     }
 
-    // set bit ordering
-    obj->spi.msbf = (order == SPI_MSB) ? 1 : 0;
-
     //save state
     uint32_t route = obj->spi.spi->ROUTE;
     uint32_t iflags = obj->spi.spi->IEN;
-    uint32_t baudrate = obj->spi.baudrate;
     bool enabled = (obj->spi.spi->STATUS & (USART_STATUS_RXENS | USART_STATUS_TXENS)) != 0;
 
-    usart_init(obj, baudrate, databits, (slave ? false : true), clockMode);
+    usart_init(obj, 100000, databits, (slave ? false : true), clockMode);
 
     //restore state
     obj->spi.spi->ROUTE = route;
@@ -321,11 +322,7 @@ void spi_format(spi_t *obj, int bits, int mode, spi_bitorder_t order)
 
 void spi_frequency(spi_t *obj, int hz)
 {
-    // store value
-    obj->spi.baudrate = hz;
-
-    // set value
-    USART_BaudrateSyncSet(obj->spi.spi, 0, hz);
+    USART_BaudrateSyncSet(obj->spi.spi, REFERENCE_FREQUENCY, hz);
 }
 
 /* Read/Write */
@@ -363,7 +360,7 @@ int spi_master_write(spi_t *obj, int value)
 
     /* Wait for transmission of last byte */
     while (!(obj->spi.spi->STATUS & USART_STATUS_TXC)) {
-        // TODO: enable interrupts and sleep
+        sleep(); // TODO_LP this might break other code, write should be separate from read?
     }
 
     return spi_read(obj);
@@ -423,10 +420,7 @@ void spi_buffer_set(spi_t *obj, void *tx, uint32_t tx_length, void *rx, uint32_t
     uint32_t i;
     uint16_t *tx_ptr = (uint16_t *) tx;
 
-    tx_length *= (bit_width >> 3);
-    rx_length *= (bit_width >> 3);
-
-    obj->tx_buff.buffer = tx;
+    obj->tx_buff.buffer = (void *)tx;
     obj->rx_buff.buffer = rx;
     obj->tx_buff.length = tx_length;
     obj->rx_buff.length = rx_length;
@@ -520,9 +514,11 @@ static void spi_buffer_rx_read(spi_t *obj)
         } else if (obj->spi.spi->STATUS & USART_STATUS_RXFULL) {
             // Read from the buffer to lower the interrupt flag
             volatile uint32_t data = (uint32_t)obj->spi.spi->RXDOUBLE;
+            (void)data;
         } else if (obj->spi.spi->STATUS & USART_STATUS_RXDATAV) {
             // Read from the buffer to lower the interrupt flag
             volatile uint32_t data = (uint32_t)obj->spi.spi->RXDATA;
+            (void)data;
         }
     } else {
         // Data bits is multiple of 9, so use the extended registers
@@ -548,9 +544,11 @@ static void spi_buffer_rx_read(spi_t *obj)
         } else if (obj->spi.spi->STATUS & USART_STATUS_RXFULL) {
             // Read from the buffer to lower the interrupt flag
             volatile uint32_t data = (uint32_t)obj->spi.spi->RXDOUBLEX;
+            (void)data;
         } else if (obj->spi.spi->STATUS & USART_STATUS_RXDATAV) {
             // Read from the buffer to lower the interrupt flag
             volatile uint32_t data = (uint32_t)obj->spi.spi->RXDATAX;
+            (void)data;
         }
     }
 }
@@ -789,14 +787,12 @@ static void spi_activate_dma(spi_t *obj, void* rxdata, void* txdata, int tx_leng
     /* Split up transfers if the tx length is larger than what the DMA supports. */
     const int DMA_MAX_TRANSFER = (_DMA_CTRL_N_MINUS_1_MASK >> _DMA_CTRL_N_MINUS_1_SHIFT);
 
-    if (tx_length > DMA_MAX_TRANSFER)
-    {
+    if (tx_length > DMA_MAX_TRANSFER) {
         uint32_t max_length = DMA_MAX_TRANSFER;
 
         /* Make sure only an even amount of bytes are transferred
            if the width is larger than 8 bits. */
-        if (obj->spi.bits > 8)
-        {
+        if (obj->spi.bits > 8) {
             max_length = DMA_MAX_TRANSFER - (DMA_MAX_TRANSFER & 0x01);
         }
 
@@ -843,7 +839,7 @@ static void spi_activate_dma(spi_t *obj, void* rxdata, void* txdata, int tx_leng
                             true,
                             false,
                             (obj->spi.bits <= 8 ? (void *)&(obj->spi.spi->TXDATA) : (void *)&(obj->spi.spi->TXDOUBLE)), //When frame size > 9, point to TXDOUBLE
-                            (txdata == 0 ? &fill_word : txdata), // When there is nothing to transmit, point to static fill word
+                            (txdata == 0 ? &fill_word : (void *)txdata), // When there is nothing to transmit, point to static fill word
                             (obj->spi.bits <= 8 ? tx_length - 1 : (tx_length / 2) - 1)); // When using TXDOUBLE, recalculate transfer length
     } else {
         /* Frame size == 9 */
@@ -881,7 +877,7 @@ static void spi_activate_dma(spi_t *obj, void* rxdata, void* txdata, int tx_leng
                             true,
                             false,
                             (void *)&(obj->spi.spi->TXDATAX), //When frame size > 9, point to TXDOUBLE
-                            (txdata == 0 ? &fill_word : txdata), // When there is nothing to transmit, point to static fill word
+                            (txdata == 0 ? &fill_word : (void *)txdata), // When there is nothing to transmit, point to static fill word
                             (tx_length / 2) - 1); // When using TXDOUBLE, recalculate transfer length
     }
 }
@@ -959,7 +955,7 @@ void spi_master_transfer(spi_t *obj, void *tx, size_t tx_length, void *rx, size_
 
     /* update fill word if on 9-bit frame size */
     if(obj->spi.bits == 9) fill_word = SPI_FILL_WORD & 0x1FF;
-    else fill_word = SPI_FILL_WORD;
+    else fill_word = (uint16_t)SPI_FILL_WORD;
 
     /* check corner case */
     if(tx_length == 0) {
@@ -973,11 +969,6 @@ void spi_master_transfer(spi_t *obj, void *tx, size_t tx_length, void *rx, size_
     /* Then, enable the events */
     spi_enable_event(obj, SPI_EVENT_ALL, false);
     spi_enable_event(obj, event, true);
-
-    /* Be tricky on how we handle increased bit widths in the buffer... Handling on byte-basis */
-    // div 8 = shift right 3
-    tx_length = tx_length * (bit_width >> 3);
-    rx_length = rx_length * (bit_width >> 3);
 
     // Set the sleep mode
     blockSleepMode(SPI_LEAST_ACTIVE_SLEEPMODE);
@@ -1006,10 +997,9 @@ uint32_t spi_irq_handler_asynch(spi_t* obj)
         /* DMA implementation */
 
         /* If there is still data in the TX buffer, setup a new transfer. */
-        if (obj->tx_buff.pos < obj->tx_buff.length)
-        {
+        if (obj->tx_buff.pos < obj->tx_buff.length) {
             /* Find position and remaining length without modifying tx_buff. */
-            void* tx_pointer = obj->tx_buff.buffer + obj->tx_buff.pos;
+            void* tx_pointer = (char*)obj->tx_buff.buffer + obj->tx_buff.pos;
             uint32_t tx_length = obj->tx_buff.length - obj->tx_buff.pos;
 
             /* Begin transfer. Rely on spi_activate_dma to split up the transfer further. */
@@ -1030,7 +1020,7 @@ uint32_t spi_irq_handler_asynch(spi_t* obj)
                 DMA_CfgDescr_TypeDef txDescrCfg;
 
                 if(obj->spi.bits != 9) {
-                    fill_word = SPI_FILL_WORD;
+                    fill_word = (uint16_t)SPI_FILL_WORD;
                     /* Setting up channel descriptor */
                     txDescrCfg.dstInc = dmaDataIncNone;
                     txDescrCfg.srcInc = dmaDataIncNone; //Do not increment source pointer when there is no transmit buffer

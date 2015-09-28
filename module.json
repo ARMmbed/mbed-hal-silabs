@@ -1,18 +1,27 @@
 {
   "name": "mbed-hal-silabs",
-  "version": "0.4.3",
-  "description": "mbed low-level Hardware Abstraction Layer implementation for Silicon Labs' microcontrollers",
+  "version": "0.4.4",
+  "description": "mbed low-level Hardware Abstraction Layer implementation for Silicon Labs MCUs",
   "keywords": [
     "mbed",
     "HAL"
   ],
-  "author": "Marcus Chang <marcus.chang@arm.com>",
+  "author": "Aksel Skauge Mellbye <aksel.mellbye@silabs.com>",
   "repository": {
     "url": "git@github.com:ARMmbed/mbed-hal-silabs.git",
     "type": "git"
   },
   "homepage": "https://github.com/ARMmbed/mbed-hal-silabs",
-  "license": "Apache-2",
+  "licenses": [
+    {
+      "url": "https://spdx.org/licenses/Apache-2.0",
+      "type": "Apache-2.0"
+    },
+    {
+      "url": "https://spdx.org/licenses/Zlib",
+      "type": "zlib"
+    }
+  ],
   "extraIncludes": [
     "mbed-hal-silabs",
     "source/emlib/inc"
@@ -22,8 +31,17 @@
     "cmsis-core": "~0.2.0"
   },
   "targetDependencies": {
-    "stk3700": {
-      "mbed-hal-efm32gg-stk3700": "~0.2.0"
+    "efm32gg-stk": {
+      "mbed-hal-efm32gg-stk": "~0.0.1"
+    },
+    "efm32hg-stk": {
+      "mbed-hal-efm32hg-stk": "~0.0.1"
+    },
+    "efm32wg-stk": {
+      "mbed-hal-efm32wg-stk": "~0.0.1"
+    },
+    "efm32lg-stk": {
+      "mbed-hal-efm32lg-stk": "~0.0.1"
     },
     "watch": {
       "mbed-hal-efm32gg-watch": "~0.2.0"

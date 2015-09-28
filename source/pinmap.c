@@ -1,18 +1,26 @@
-/* mbed Microcontroller Library
- * Copyright (c) 2006-2013 ARM Limited
+/***************************************************************************//**
+ * @file pinmap.c
+ *******************************************************************************
+ * @section License
+ * <b>(C) Copyright 2014-2015 Silicon Labs, http://www.silabs.com</b>
+ *******************************************************************************
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *
+ ******************************************************************************/
+
 #include "pinmap.h"
 #include "em_gpio.h"
 #include "em_cmu.h"
@@ -23,11 +31,13 @@ static int gpio_clock_inited = 0;
 void pin_function(PinName pin, int function)
 {
     //Intentionally left empty. We have repurposed the function field.
+    (void)pin;
+    (void)function;
 }
 
 void pin_mode(PinName pin, PinMode mode)
 {
-    MBED_ASSERT(pin != NC);
+    MBED_ASSERT((0xFFFFFF00 | pin) != NC);
 
     /* Enable GPIO clock if not already done */
     if (!gpio_clock_inited) {

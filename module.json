@@ -6,13 +6,22 @@
     "mbed",
     "HAL"
   ],
-  "author": "Marcus Chang <marcus.chang@arm.com>",
+  "author": "Aksel Skauge Mellbye <aksel.mellbye@silabs.com>",
   "repository": {
     "url": "git@github.com:ARMmbed/mbed-hal-silabs.git",
     "type": "git"
   },
   "homepage": "https://github.com/ARMmbed/mbed-hal-silabs",
-  "license": "Apache-2",
+  "licenses": [
+    {
+      "url": "https://spdx.org/licenses/Apache-2.0",
+      "type": "Apache-2.0"
+    },
+    {
+      "url": "https://spdx.org/licenses/Zlib",
+      "type": "zlib"
+    }
+  ],
   "extraIncludes": [
     "mbed-hal-silabs",
     "source/emlib/inc"

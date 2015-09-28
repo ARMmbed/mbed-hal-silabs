@@ -38,11 +38,13 @@ static int gpio_clock_inited = 0;
 void pin_function(PinName pin, int function)
 {
     //Intentionally left empty. We have repurposed the function field.
+    (void)pin;
+    (void)function;
 }
 
 void pin_mode(PinName pin, PinMode mode)
 {
-    MBED_ASSERT((0xFFFFFF00 |pin) != NC);
+    MBED_ASSERT((0xFFFFFF00 | pin) != NC);
 
     /* Enable GPIO clock if not already done */
     if (!gpio_clock_inited) {

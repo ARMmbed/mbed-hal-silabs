@@ -774,6 +774,7 @@ void serial_irq_handler(serial_t *obj, uart_irq_handler handler, uint32_t id)
  */
 static void uart_irq(UARTName name, int index, SerialIrq irq)
 {
+    (void)name;
     if (serial_irq_ids[index] != 0) {
         /* Pass interrupt on to mbed common handler */
         irq_handler(serial_irq_ids[index], irq);
@@ -895,6 +896,7 @@ int serial_writable(serial_t *obj)
 void serial_clear(serial_t *obj)
 {
     /* Interrupts automatically clear when condition is not met anymore */
+    (void)obj;
 }
 
 void serial_break_set(serial_t *obj)
@@ -920,6 +922,7 @@ void serial_break_clear(serial_t *obj)
      * by the recipient. Continuous breaks lasting longer than a USART frame
      * are thus not supported by the USART. GPIO can be used for this.
      */
+     (void)obj;
 }
 
 void serial_pinout_tx(PinName tx)
@@ -939,6 +942,7 @@ void serial_pinout_tx(PinName tx)
 ******************************************/
 static void serial_dmaTransferComplete(unsigned int channel, bool primary, void *user)
 {
+    (void)primary;
     /* Store information about which channel triggered because CPP doesn't take arguments */
     serial_dma_irq_fired[channel] = true;
 
@@ -1246,6 +1250,7 @@ void serial_rx_enable_event(serial_t *obj, int event, uint8_t enable)
  */
 void serial_tx_buffer_set(serial_t *obj, void *tx, int tx_length, uint8_t width)
 {
+    (void)width;
     // We only support byte buffers for now
     MBED_ASSERT(width == 8);
 
@@ -1266,6 +1271,7 @@ void serial_tx_buffer_set(serial_t *obj, void *tx, int tx_length, uint8_t width)
  */
 void serial_rx_buffer_set(serial_t *obj, void *rx, int rx_length, uint8_t width)
 {
+    (void)width;
     // We only support byte buffers for now
     MBED_ASSERT(width == 8);
 

@@ -415,6 +415,9 @@ int i2c_slave_write(i2c_t *obj, const char *data, int length)
 
 void i2c_slave_address(i2c_t *obj, int idx, uint32_t address, uint32_t mask)
 {
+    (void)idx;
+    (void)mask;
+
     obj->i2c.i2c->SADDR = address;
     obj->i2c.i2c->SADDRMASK = 0xFE;//mask;
 }
@@ -442,6 +445,9 @@ void i2c_slave_address(i2c_t *obj, int idx, uint32_t address, uint32_t mask)
  */
 void i2c_transfer_asynch(i2c_t *obj, void *tx, size_t tx_length, void *rx, size_t rx_length, uint32_t address, uint32_t stop, uint32_t handler, uint32_t event, DMAUsage hint)
 {
+    (void)stop;
+    (void)hint;
+
     I2C_TransferReturn_TypeDef retval;
     if(i2c_active(obj)) return;
     if((tx_length == 0) && (rx_length == 0)) return;

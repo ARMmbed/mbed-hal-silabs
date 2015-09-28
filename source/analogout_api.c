@@ -44,6 +44,7 @@
 
 uint8_t analogout_get_index(dac_t *obj)
 {
+    (void)obj;
     return 0;
 }
 
@@ -96,6 +97,8 @@ void analogout_enable(dac_t *obj, uint8_t enable)
 void analogout_pins_enable(dac_t *obj, uint8_t enable)
 {
     //not avail for EFM32
+    (void)obj;
+    (void)enable;
 }
 
 static inline void dac_write(dac_t *obj, int value)

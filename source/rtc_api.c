@@ -161,7 +161,7 @@ void rtc_write(time_t t)
 {
     /* We have to check that the RTC did not tick while doing this. */
     /* If the RTC ticks we just redo this. */
-    uint32_t time;
+    time_t time;
     do {
         time = rtc_read_uncompensated();
         time_base = t - time;

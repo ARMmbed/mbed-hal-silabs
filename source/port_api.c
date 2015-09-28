@@ -41,6 +41,7 @@
 
 uint8_t port_get_index(port_t *obj)
 {
+    (void)obj;
     return 0;
 }
 

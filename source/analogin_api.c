@@ -43,6 +43,7 @@
 
 uint8_t analogin_get_index(analogin_t *obj)
 {
+    (void)obj;
     return 0; //only one module availalbe
 }
 
@@ -89,11 +90,15 @@ void analogin_init(analogin_t *obj, PinName pin)
 void analogin_enable(analogin_t *obj, uint8_t enable)
 {
     //not avail for EFM32
+    (void)obj;
+    (void)enable;
 }
 
 void analogin_enable_pins(analogin_t *obj, uint8_t enable)
 {
     //not avail for EFM32
+    (void)obj;
+    (void)enable;
 }
 
 void analogin_enable_interrupt(analogin_t *obj, uint32_t address, uint8_t enable)

@@ -26,6 +26,7 @@
 #include "em_cmu.h"
 #include "em_emu.h"
 #include "device_peripherals.h"
+#include "clocking.h"
 #include "device.h"
 #include "em_usart.h"
 #include "gpio_api.h"

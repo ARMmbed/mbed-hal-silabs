@@ -23,25 +23,26 @@
     }
   ],
   "extraIncludes": [
-    "mbed-hal-silabs",
-    "source/emlib/inc"
+    "mbed-hal-efm32",
+    "source/emlib/inc",
+    "mbed-hal"
   ],
   "dependencies": {
-    "mbed-hal": "~0.6.0",
+    "mbed-hal": "~0.7.0",
     "cmsis-core": "~0.2.0"
   },
   "targetDependencies": {
     "efm32gg-stk": {
-      "mbed-hal-efm32gg-stk": "~0.0.1"
+      "mbed-hal-efm32gg": "~0.1.0"
     },
     "efm32hg-stk": {
-      "mbed-hal-efm32hg-stk": "~0.0.1"
+      "mbed-hal-efm32hg": "~0.1.0"
     },
     "efm32wg-stk": {
-      "mbed-hal-efm32wg-stk": "~0.0.1"
+      "mbed-hal-efm32wg": "~0.1.0"
     },
     "efm32lg-stk": {
-      "mbed-hal-efm32lg-stk": "~0.0.1"
+      "mbed-hal-efm32lg": "~0.1.0"
     },
     "watch": {
       "mbed-hal-efm32gg-watch": "~0.2.0"

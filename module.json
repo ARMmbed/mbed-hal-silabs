@@ -28,8 +28,8 @@
     "mbed-hal"
   ],
   "dependencies": {
-    "mbed-hal": "~0.7.0",
-    "cmsis-core": "~0.2.0"
+    "mbed-hal": "~0.8.0",
+    "cmsis-core": "~0.4.0"
   },
   "targetDependencies": {
     "efm32gg-stk": {

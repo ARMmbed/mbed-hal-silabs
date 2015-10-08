@@ -264,11 +264,11 @@ void spi_enable_interrupt(spi_t *obj, uint32_t handler, uint8_t enable)
     }
 
     if (enable == true) {
-        NVIC_SetVector(IRQvector, handler);
+        vIRQ_SetVector(IRQvector, handler);
         USART_IntEnable(obj->spi.spi, USART_IEN_RXDATAV);
         NVIC_EnableIRQ(IRQvector);
     } else {
-        NVIC_SetVector(IRQvector, handler);
+        vIRQ_SetVector(IRQvector, handler);
         USART_IntDisable(obj->spi.spi, USART_IEN_RXDATAV);
         NVIC_DisableIRQ(IRQvector);
     }

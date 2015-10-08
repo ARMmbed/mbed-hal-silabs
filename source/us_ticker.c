@@ -113,8 +113,8 @@ void us_ticker_init(void)
 
     /* Enable interrupt vector in NVIC */
     TIMER_IntEnable(US_TICKER_TIMER, TIMER_IEN_OF);
-    NVIC_SetVector(US_TICKER_TIMER_IRQ, (uint32_t) us_ticker_irq_handler_internal);
-    NVIC_EnableIRQ(US_TICKER_TIMER_IRQ);
+    vIRQ_SetVector(US_TICKER_TIMER_IRQ, (uint32_t) us_ticker_irq_handler_internal);
+    vIRQ_EnableIRQ(US_TICKER_TIMER_IRQ);
 
     /* Set top value */
     TIMER_TopSet(US_TICKER_TIMER, 0xFFFF);

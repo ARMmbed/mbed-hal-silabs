@@ -354,47 +354,47 @@ void serial_preinit(serial_t *obj, PinName tx, PinName rx)
     switch ((uint32_t)obj->serial.periph.uart) {
 #ifdef UART0
         case UART_0:
-            NVIC_SetVector(UART0_RX_IRQn, (uint32_t) &uart0_rx_irq);
-            NVIC_SetVector(UART0_TX_IRQn, (uint32_t) &uart0_tx_irq);
-            NVIC_SetPriority(UART0_TX_IRQn, 1);
+            vIRQ_SetVector(UART0_RX_IRQn, (uint32_t) &uart0_rx_irq);
+            vIRQ_SetVector(UART0_TX_IRQn, (uint32_t) &uart0_tx_irq);
+            vIRQ_SetPriority(UART0_TX_IRQn, 1);
             break;
 #endif
 #ifdef UART1
         case UART_1:
-            NVIC_SetVector(UART1_RX_IRQn, (uint32_t) &uart1_rx_irq);
-            NVIC_SetVector(UART1_TX_IRQn, (uint32_t) &uart1_tx_irq);
-            NVIC_SetPriority(UART1_TX_IRQn, 1);
+            vIRQ_SetVector(UART1_RX_IRQn, (uint32_t) &uart1_rx_irq);
+            vIRQ_SetVector(UART1_TX_IRQn, (uint32_t) &uart1_tx_irq);
+            vIRQ_SetPriority(UART1_TX_IRQn, 1);
             break;
 #endif
 #ifdef USART0
         case USART_0:
-            NVIC_SetVector(USART0_RX_IRQn, (uint32_t) &usart0_rx_irq);
-            NVIC_SetVector(USART0_TX_IRQn, (uint32_t) &usart0_tx_irq);
-            NVIC_SetPriority(USART0_TX_IRQn, 1);
+            vIRQ_SetVector(USART0_RX_IRQn, (uint32_t) &usart0_rx_irq);
+            vIRQ_SetVector(USART0_TX_IRQn, (uint32_t) &usart0_tx_irq);
+            vIRQ_SetPriority(USART0_TX_IRQn, 1);
             break;
 #endif
 #ifdef USART1
         case USART_1:
-            NVIC_SetVector(USART1_RX_IRQn, (uint32_t) &usart1_rx_irq);
-            NVIC_SetVector(USART1_TX_IRQn, (uint32_t) &usart1_tx_irq);
-            NVIC_SetPriority(USART1_TX_IRQn, 1);
+            vIRQ_SetVector(USART1_RX_IRQn, (uint32_t) &usart1_rx_irq);
+            vIRQ_SetVector(USART1_TX_IRQn, (uint32_t) &usart1_tx_irq);
+            vIRQ_SetPriority(USART1_TX_IRQn, 1);
             break;
 #endif
 #ifdef USART2
         case USART_2:
-            NVIC_SetVector(USART2_RX_IRQn, (uint32_t) &usart2_rx_irq);
-            NVIC_SetVector(USART2_TX_IRQn, (uint32_t) &usart2_tx_irq);
-            NVIC_SetPriority(USART2_TX_IRQn, 1);
+            vIRQ_SetVector(USART2_RX_IRQn, (uint32_t) &usart2_rx_irq);
+            vIRQ_SetVector(USART2_TX_IRQn, (uint32_t) &usart2_tx_irq);
+            vIRQ_SetPriority(USART2_TX_IRQn, 1);
             break;
 #endif
 #ifdef LEUART0
         case LEUART_0:
-            NVIC_SetVector(LEUART0_IRQn, (uint32_t) &leuart0_irq);
+            vIRQ_SetVector(LEUART0_IRQn, (uint32_t) &leuart0_irq);
             break;
 #endif
 #ifdef LEUART1
         case LEUART_1:
-            NVIC_SetVector(LEUART1_IRQn, (uint32_t) &leuart1_irq);
+            vIRQ_SetVector(LEUART1_IRQn, (uint32_t) &leuart1_irq);
             break;
 #endif
     }
@@ -743,7 +743,7 @@ void serial_write_asynch_complete(serial_t *obj)
  */
 void serial_write_enable_interrupt(serial_t *obj, uint32_t address, uint8_t enable)
 {
-    NVIC_SetVector(serial_get_tx_irq_index(obj), address);
+    vIRQ_SetVector(serial_get_tx_irq_index(obj), address);
     serial_irq_set(obj, (SerialIrq)1, enable);
 }
 
@@ -755,7 +755,7 @@ void serial_write_enable_interrupt(serial_t *obj, uint32_t address, uint8_t enab
  */
 void serial_read_enable_interrupt(serial_t *obj, uint32_t address, uint8_t enable)
 {
-    NVIC_SetVector(serial_get_rx_irq_index(obj), address);
+    vIRQ_SetVector(serial_get_rx_irq_index(obj), address);
     serial_irq_set(obj, (SerialIrq)0, enable);
 }
 
@@ -807,7 +807,7 @@ void serial_irq_set(serial_t *obj, SerialIrq irq, uint32_t enable)
             } else { /* TX */
                 obj->serial.periph.leuart->IEN |= LEUART_IEN_TXC;
                 NVIC_ClearPendingIRQ(serial_get_tx_irq_index(obj));
-                NVIC_SetPriority(serial_get_tx_irq_index(obj), 1);
+                vIRQ_SetPriority(serial_get_tx_irq_index(obj), 1);
                 NVIC_EnableIRQ(serial_get_tx_irq_index(obj));
             }
         } else {
@@ -829,7 +829,7 @@ void serial_irq_set(serial_t *obj, SerialIrq irq, uint32_t enable)
             } else { /* TX */
                 obj->serial.periph.uart->IEN |= USART_IEN_TXC;
                 NVIC_ClearPendingIRQ(serial_get_tx_irq_index(obj));
-                NVIC_SetPriority(serial_get_tx_irq_index(obj), 1);
+                vIRQ_SetPriority(serial_get_tx_irq_index(obj), 1);
                 NVIC_EnableIRQ(serial_get_tx_irq_index(obj));
             }
         } else {
@@ -1350,8 +1350,8 @@ int serial_tx_asynch(serial_t *obj, void *tx, size_t tx_length, uint8_t tx_width
         // Store callback
         NVIC_ClearPendingIRQ(serial_get_tx_irq_index(obj));
         NVIC_DisableIRQ(serial_get_tx_irq_index(obj));
-        NVIC_SetPriority(serial_get_tx_irq_index(obj), 1);
-        NVIC_SetVector(serial_get_tx_irq_index(obj), (uint32_t)handler);
+        vIRQ_SetPriority(serial_get_tx_irq_index(obj), 1);
+        vIRQ_SetVector(serial_get_tx_irq_index(obj), (uint32_t)handler);
         NVIC_EnableIRQ(serial_get_tx_irq_index(obj));
 
         if(LEUART_REF_VALID(obj->serial.periph.leuart)) {
@@ -1436,7 +1436,7 @@ void serial_rx_asynch(serial_t *obj, void *rx, size_t rx_length, uint8_t rx_widt
     else {
         // Store callback
         NVIC_ClearPendingIRQ(serial_get_rx_irq_index(obj));
-        NVIC_SetVector(serial_get_rx_irq_index(obj), (uint32_t)handler);
+        vIRQ_SetVector(serial_get_rx_irq_index(obj), (uint32_t)handler);
         NVIC_EnableIRQ(serial_get_rx_irq_index(obj));
 
         if(LEUART_REF_VALID(obj->serial.periph.leuart)) {

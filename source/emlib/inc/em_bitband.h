@@ -38,7 +38,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
+#undef BITBAND_PER_BASE
 /***************************************************************************//**
  * @addtogroup EM_Library
  * @{
@@ -180,7 +180,7 @@ __STATIC_INLINE uint32_t BITBAND_SRAMRead(uint32_t *addr, uint32_t bit)
 
 /** @} (end addtogroup BITBAND) */
 /** @} (end addtogroup EM_Library) */
-
+#define BITBAND_PER_BASE (0x42000000UL)
 #ifdef __cplusplus
 }
 #endif

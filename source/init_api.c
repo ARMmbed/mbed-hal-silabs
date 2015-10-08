@@ -39,8 +39,6 @@ gpio_t bc_enable;
  * Otherwise, let the application override this if necessary */
 void mbed_hal_init()
 {
-    CHIP_Init();
-
     /* Set up the clock sources for this chip */
 #if( CORE_CLOCK_SOURCE == HFXO)
     CMU_ClockSelectSet(cmuClock_HF, cmuSelect_HFXO);

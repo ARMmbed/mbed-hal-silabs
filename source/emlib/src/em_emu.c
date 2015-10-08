@@ -32,12 +32,15 @@
 
 
 #include "em_emu.h"
+#include "uvisor-lib/uvisor-lib.h"
 #if defined( EMU_PRESENT ) && ( EMU_COUNT > 0 )
 
 #include "em_cmu.h"
 #include "em_system.h"
 #include "em_assert.h"
 
+/* FIXME: reapply workaround */
+#undef ERRATA_FIX_EMU_E107_EN
 /***************************************************************************//**
  * @addtogroup EM_Library
  * @{
@@ -76,11 +79,13 @@
   #define NON_WIC_INT_MASK_0    (~(0x001be323U))
   #define NON_WIC_INT_MASK_1    (~(0x0U))
 #elif defined(_EFM32_GIANT_FAMILY)
-  #define ERRATA_FIX_EMU_E107_EN
+// FIXME
+//  #define ERRATA_FIX_EMU_E107_EN
   #define NON_WIC_INT_MASK_0    (~(0xff020e63U))
   #define NON_WIC_INT_MASK_1    (~(0x00000046U))
 #elif defined(_EFM32_WONDER_FAMILY)
-  #define ERRATA_FIX_EMU_E107_EN
+// FIXME
+//  #define ERRATA_FIX_EMU_E107_EN
   #define NON_WIC_INT_MASK_0    (~(0xff020e63U))
   #define NON_WIC_INT_MASK_1    (~(0x00000046U))
 #else
@@ -301,7 +306,9 @@ void EMU_EnterEM2(bool restore)
   cmuStatus = CMU->STATUS;
 
   /* Enter Cortex-M3 deep sleep mode */
-  SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
+  /* FIXME this will be replaced by a uVisor register-level gateway API */
+  uvisor_write32(&SCB->SCR, uvisor_read32(&(SCB->SCR)) | SCB_SCR_SLEEPDEEP_Msk);
+//  SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
 
   /* Fix for errata EMU_E107 - store non-WIC interrupt enable flags.
      Disable the enabled non-WIC interrupts. */

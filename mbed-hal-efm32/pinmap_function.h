@@ -24,8 +24,8 @@
 #ifndef MBED_PINMAP_FUNCTION_H
 #define MBED_PINMAP_FUNCTION_H
 
-#include "PinNames.h"
-#include "pinmap.h"
+#include "mbed-hal-efm32/PinNames.h"
+#include "mbed-hal/pinmap.h"
 
 #ifdef __cplusplus
 extern "C" {

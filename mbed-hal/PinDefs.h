@@ -1,5 +1,5 @@
 /***************************************************************************//**
- * @file PinNames.h
+ * @file PinDefs.h
  *******************************************************************************
  * @section License
  * <b>(C) Copyright 2014-2015 Silicon Labs, http://www.silabs.com</b>
@@ -23,9 +23,9 @@
 #ifndef MBED_PINDEFS_H
 #define MBED_PINDEFS_H
 
-#include "cmsis.h"
+#include "cmsis-core/cmsis.h"
 #include "em_gpio.h"
-#include "Modules.h"
+#include "mbed-hal-efm32/Modules.h"
 
 #ifdef __cplusplus
 extern "C" {

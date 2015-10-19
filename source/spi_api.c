@@ -21,24 +21,28 @@
  *
  ******************************************************************************/
 
-#include "device.h"
-#include "clocking.h"
+#include "mbed-hal-efm32/device.h"
 #if DEVICE_SPI
 
-#include "mbed_assert.h"
-#include "PeripheralPins.h"
-#include "pinmap.h"
-#include "pinmap_function.h"
-#include "error.h"
+#include "mbed/mbed_assert.h"
 
-#include "dma_api.h"
-#include "dma_api_HAL.h"
-#include "spi_api.h"
+#include "mbed-hal/pinmap.h"
+#include "mbed-hal/dma_api.h"
+#include "mbed-hal/spi_api.h"
+#include "mbed-hal/sleep_api.h"
+
+#include "mbed-hal-efm32/clocking.h"
+#include "mbed-hal-efm32/PeripheralPins.h"
+#include "mbed-hal-efm32/pinmap_function.h"
+#include "mbed-hal-efm32/error.h"
+#include "mbed-hal-efm32/dma_api_HAL.h"
+#include "mbed-hal-efm32/sleepmodes.h"
+
 #include "em_usart.h"
 #include "em_cmu.h"
 #include "em_dma.h"
-#include "sleep_api.h"
-#include "sleepmodes.h"
+
+#include "uvisor-lib/uvisor-lib.h"
 
 static uint16_t fill_word = (uint16_t)SPI_FILL_WORD;
 #define SPI_LEAST_ACTIVE_SLEEPMODE EM1
@@ -360,7 +364,7 @@ int spi_master_write(spi_t *obj, int value)
 
     /* Wait for transmission of last byte */
     while (!(obj->spi.spi->STATUS & USART_STATUS_TXC)) {
-        sleep(); // TODO_LP this might break other code, write should be separate from read?
+        // Do nothing
     }
 
     return spi_read(obj);

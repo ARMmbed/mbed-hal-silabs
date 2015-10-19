@@ -21,10 +21,12 @@
  *
  ******************************************************************************/
 
-#include "pinmap.h"
+#include "mbed/mbed_assert.h"
+
+#include "mbed-hal/pinmap.h"
+
 #include "em_gpio.h"
 #include "em_cmu.h"
-#include "mbed_assert.h"
 
 static int gpio_clock_inited = 0;
 

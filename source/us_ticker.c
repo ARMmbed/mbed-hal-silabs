@@ -22,16 +22,22 @@
  ******************************************************************************/
 
 #include <stddef.h>
-#include "us_ticker_api.h"
-#include "cmsis.h"
-#include "mbed_assert.h"
+#include "cmsis-core/cmsis.h"
+
+#include "mbed/mbed_assert.h"
+
+#include "mbed-hal/us_ticker_api.h"
+#include "mbed-hal/sleep_api.h"
+
+#include "mbed-hal-efm32/device_peripherals.h"
+#include "mbed-hal-efm32/device.h"
+#include "mbed-hal-efm32/clocking.h"
+#include "mbed-hal-efm32/sleepmodes.h"
+
 #include "em_cmu.h"
 #include "em_timer.h"
-#include "device_peripherals.h"
-#include "device.h"
-#include "clocking.h"
-#include "sleep_api.h"
-#include "sleepmodes.h"
+
+#include "uvisor-lib/uvisor-lib.h"
 
 #define TIMER_LEAST_ACTIVE_SLEEPMODE EM1
 /**

@@ -21,13 +21,14 @@
  *
  ******************************************************************************/
 
-#include "device.h"
+#include "mbed-hal-efm32/device.h"
 #if DEVICE_LOWPOWERTIMER
 
-#include "rtc_api.h"
-#include "rtc_api_HAL.h"
-#include "lp_ticker_api.h"
-#include "sleep_api.h"
+#include "mbed-hal/rtc_api.h"
+#include "mbed-hal/lp_ticker_api.h"
+#include "mbed-hal/sleep_api.h"
+
+#include "mbed-hal-efm32/rtc_api_HAL.h"
 
 #define RTC_NUM_BITS                (24)
 #define RTC_BITMASK                 (0x00FFFFFFUL)

@@ -22,7 +22,9 @@
  ******************************************************************************/
 
 #include <stdint.h>
-#include "dma_api_HAL.h"
+
+#include "mbed-hal-efm32/dma_api_HAL.h"
+
 #include "em_dma.h"
 #include "em_cmu.h"
 

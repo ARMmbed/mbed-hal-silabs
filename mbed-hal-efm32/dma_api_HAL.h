@@ -25,7 +25,7 @@
 #define MBED_DMA_API_HAL_H
 
 #include <stdint.h>
-#include "dma_api.h"
+#include "mbed-hal/dma_api.h"
 #include "em_dma.h"
 
 #ifdef __cplusplus

@@ -22,7 +22,7 @@
  *
  ******************************************************************************/
 
-#include "device_peripherals.h"
+#include "mbed-hal-efm32/device_peripherals.h"
 
 /* Clocks */
 

@@ -21,18 +21,20 @@
  *
  ******************************************************************************/
 
-#include "device.h"
+#include "mbed-hal-efm32/device.h"
 #if DEVICE_ANALOGIN
 
-#include "mbed_assert.h"
-#include "analogin_api.h"
+#include "mbed/mbed_assert.h"
+#include "mbed-hal/analogin_api.h"
+#include "mbed-hal/pinmap.h"
 
-#include "pinmap.h"
-#include "pinmap_function.h"
-#include "PeripheralPins.h"
+#include "mbed-hal-efm32/pinmap_function.h"
+#include "mbed-hal-efm32/PeripheralPins.h"
 
 #include "em_adc.h"
 #include "em_cmu.h"
+
+#include "uvisor-lib/uvisor-lib.h"
 
 uint8_t analogin_get_index(analogin_t *obj)
 {

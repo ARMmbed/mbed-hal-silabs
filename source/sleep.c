@@ -21,12 +21,15 @@
  *
  ******************************************************************************/
 
-#include "device.h"
+#include "mbed-hal-efm32/device.h"
 #if DEVICE_SLEEP
 
-#include "sleep_api.h"
-#include "sleepmodes.h"
-#include "cmsis.h"
+#include "cmsis-core/cmsis.h"
+
+#include "mbed-hal/sleep_api.h"
+
+#include "mbed-hal-efm32/sleepmodes.h"
+
 #include "em_emu.h"
 #include "em_int.h"
 

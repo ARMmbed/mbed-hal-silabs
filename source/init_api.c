@@ -21,16 +21,15 @@
  *
  ******************************************************************************/
 
-#include "em_chip.h"
-#include "em_device.h"
-#include "em_cmu.h"
-#include "em_emu.h"
-#include "device_peripherals.h"
-#include "clocking.h"
-#include "device.h"
-#include "em_usart.h"
-#include "gpio_api.h"
+#include "mbed-hal/gpio_api.h"
 #include "mbed-hal/init_api.h"
+
+#include "em_chip.h"
+#include "em_cmu.h"
+
+#include "mbed-hal-efm32/device_peripherals.h"
+#include "mbed-hal-efm32/clocking.h"
+#include "mbed-hal-efm32/device.h"
 
 gpio_t bc_enable;
 
@@ -39,6 +38,8 @@ gpio_t bc_enable;
  * Otherwise, let the application override this if necessary */
 void mbed_hal_init()
 {
+    /* FIXME: Re-add CHIP_Init() */
+
     /* Set up the clock sources for this chip */
 #if( CORE_CLOCK_SOURCE == HFXO)
     CMU_ClockSelectSet(cmuClock_HF, cmuSelect_HFXO);

@@ -21,9 +21,9 @@
  *
  ******************************************************************************/
 
-#include "pinmap_function.h"
-#include "PinNames.h"
-#include "error.h"
+#include "mbed-hal-efm32/pinmap_function.h"
+#include "mbed-hal-efm32/PinNames.h"
+#include "mbed-hal-efm32/error.h"
 
 /**
  * Get the value of the function field for a pin in a pinmap

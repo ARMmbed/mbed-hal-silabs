@@ -21,14 +21,15 @@
  *
  ******************************************************************************/
 
-#include "device.h"
+#include "mbed-hal-efm32/device.h"
 #if DEVICE_PORTOUT
 
-#include "port_api.h"
-#include "pinmap.h"
-#include "gpio_api.h"
-#include "em_gpio.h"
+#include "mbed-hal/port_api.h"
+#include "mbed-hal/pinmap.h"
+#include "mbed-hal/gpio_api.h"
+
 #include "em_cmu.h"
+#include "em_gpio.h"
 
 #define PORT_NUM_PINS 16
 

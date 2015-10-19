@@ -21,18 +21,22 @@
  *
  ******************************************************************************/
 
-#include "device.h"
+#include "mbed-hal-efm32/device.h"
 #if DEVICE_INTERRUPTIN
 
-#include "gpio_irq_api.h"
-#include "mbed_assert.h"
-#include "pinmap.h"
+#include "mbed/mbed_assert.h"
+
+#include "mbed-hal/gpio_irq_api.h"
+#include "mbed-hal/pinmap.h"
+#include "mbed-hal/sleep_api.h"
+
+#include "mbed-hal-efm32/sleepmodes.h"
 
 #include "em_gpio.h"
 #include "em_int.h"
 #include "em_cmu.h"
-#include "sleep_api.h"
-#include "sleepmodes.h"
+
+#include "uvisor-lib/uvisor-lib.h"
 
 #define NUM_GPIO_CHANNELS (16)
 #define GPIO_LEAST_ACTIVE_SLEEPMODE EM3
@@ -96,10 +100,10 @@ int gpio_irq_init(gpio_irq_t *obj, PinName pin, gpio_irq_handler handler, uint32
     /* Init pins */
     gpio_irq_preinit(obj, pin);
     /* Initialize GPIO interrupt dispatcher */
-    NVIC_ClearPendingIRQ(GPIO_ODD_IRQn);
-    NVIC_EnableIRQ(GPIO_ODD_IRQn);
-    NVIC_ClearPendingIRQ(GPIO_EVEN_IRQn);
-    NVIC_EnableIRQ(GPIO_EVEN_IRQn);
+    vIRQ_ClearPendingIRQ(GPIO_ODD_IRQn);
+    vIRQ_EnableIRQ(GPIO_ODD_IRQn);
+    vIRQ_ClearPendingIRQ(GPIO_EVEN_IRQn);
+    vIRQ_EnableIRQ(GPIO_EVEN_IRQn);
 
     /* Relate pin to interrupt action id */
     channel_ids[obj->pin & 0xF] = id;

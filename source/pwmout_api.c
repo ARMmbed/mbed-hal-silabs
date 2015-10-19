@@ -21,17 +21,19 @@
  *
  ******************************************************************************/
 
-#include "device.h"
-#include "clocking.h"
+#include "mbed-hal-efm32/device.h"
 #if DEVICE_PWMOUT
+#include "cmsis-core/cmsis.h"
 
-#include "mbed_assert.h"
-#include "pwmout_api.h"
-#include "cmsis.h"
-#include "pinmap.h"
-#include "PeripheralPins.h"
-#include "device_peripherals.h"
-#include "sleepmodes.h"
+#include "mbed/mbed_assert.h"
+
+#include "mbed-hal/pwmout_api.h"
+#include "mbed-hal/pinmap.h"
+
+#include "mbed-hal-efm32/PeripheralPins.h"
+#include "mbed-hal-efm32/device_peripherals.h"
+#include "mbed-hal-efm32/sleepmodes.h"
+#include "mbed-hal-efm32/clocking.h"
 
 #include "em_cmu.h"
 #include "em_gpio.h"

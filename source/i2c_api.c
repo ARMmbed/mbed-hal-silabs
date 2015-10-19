@@ -21,20 +21,24 @@
  *
  ******************************************************************************/
 
-#include "device.h"
-#include "clocking.h"
-#include <stdio.h>
+#include "mbed-hal-efm32/device.h"
 
 #if DEVICE_I2C
+#include <stdio.h>
 
-#include "mbed_assert.h"
-#include "i2c_api.h"
-#include "PeripheralPins.h"
-#include "pinmap_function.h"
-#include "sleepmodes.h"
+#include "mbed/mbed_assert.h"
+
+#include "mbed-hal/i2c_api.h"
+
+#include "mbed-hal-efm32/clocking.h"
+#include "mbed-hal-efm32/PeripheralPins.h"
+#include "mbed-hal-efm32/pinmap_function.h"
+#include "mbed-hal-efm32/sleepmodes.h"
 
 #include "em_i2c.h"
 #include "em_cmu.h"
+
+#include "uvisor-lib/uvisor-lib.h"
 
 /** Error flags indicating I2C transfer has failed somehow. */
 /* Notice that I2C_IF_TXOF (transmit overflow) is not really possible with */

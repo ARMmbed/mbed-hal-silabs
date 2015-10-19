@@ -23,13 +23,14 @@
     }
   ],
   "extraIncludes": [
-    "mbed-hal-efm32",
     "source/emlib/inc",
-    "mbed-hal"
+    "mbed-hal",
+    "mbed-hal-efm32"
   ],
   "dependencies": {
-    "mbed-hal": "~0.8.0",
-    "cmsis-core": "~0.4.0"
+    "mbed-hal": "*",
+    "cmsis-core": "*",
+    "uvisor-lib": "~0.8.0"
   },
   "targetDependencies": {
     "efm32gg-stk": {

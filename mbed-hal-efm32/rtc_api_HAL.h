@@ -25,7 +25,7 @@
 #define MBED_RTC_API_HAL_H
 
 #include <stdint.h>
-#include "rtc_api.h"
+#include "mbed-hal/rtc_api.h"
 #include "em_rtc.h"
 
 #define RTC_CLOCKDIV 		cmuClkDiv_8

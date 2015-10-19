@@ -23,7 +23,7 @@
 #ifndef MBED_PERIPHERALNAMES_H
 #define MBED_PERIPHERALNAMES_H
 
-#include "device.h"
+#include "mbed-hal-efm32/device.h"
 #include "em_adc.h"
 #include "em_usart.h"
 #include "em_i2c.h"

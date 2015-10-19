@@ -306,9 +306,12 @@ void EMU_EnterEM2(bool restore)
   cmuStatus = CMU->STATUS;
 
   /* Enter Cortex-M3 deep sleep mode */
+#ifdef UVISOR_PRESENT
   /* FIXME this will be replaced by a uVisor register-level gateway API */
   uvisor_write32(&SCB->SCR, uvisor_read32(&(SCB->SCR)) | SCB_SCR_SLEEPDEEP_Msk);
-//  SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
+#else
+  SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
+#endif
 
   /* Fix for errata EMU_E107 - store non-WIC interrupt enable flags.
      Disable the enabled non-WIC interrupts. */
@@ -422,7 +425,13 @@ void EMU_EnterEM3(bool restore)
   }
 
   /* Enter Cortex-M3 deep sleep mode */
+#ifdef UVISOR_PRESENT
+  /* FIXME this will be replaced by a uVisor register-level gateway API */
+  uvisor_write32(&SCB->SCR, uvisor_read32(&(SCB->SCR)) | SCB_SCR_SLEEPDEEP_Msk);
+#else
   SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
+#endif
+
 
   /* Fix for errata EMU_E107 - store non-WIC interrupt enable flags.
      Disable the enabled non-WIC interrupts. */

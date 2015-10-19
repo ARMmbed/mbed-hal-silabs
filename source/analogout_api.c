@@ -21,16 +21,18 @@
  *
  ******************************************************************************/
 
-#include "device.h"
+#include "mbed-hal-efm32/device.h"
 #if DEVICE_ANALOGOUT
 
-#include "mbed_assert.h"
-#include "error.h"
-#include "analogout_api.h"
-#include "pinmap.h"
-#include "pinmap_function.h"
-#include "PeripheralPins.h"
-#include "clocking.h"
+#include "mbed/mbed_assert.h"
+
+#include "mbed-hal/analogout_api.h"
+#include "mbed-hal/pinmap.h"
+
+#include "mbed-hal-efm32/error.h"
+#include "mbed-hal-efm32/pinmap_function.h"
+#include "mbed-hal-efm32/PeripheralPins.h"
+#include "mbed-hal-efm32/clocking.h"
 
 #include "em_dac.h"
 #include "em_cmu.h"

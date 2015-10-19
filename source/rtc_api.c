@@ -21,15 +21,19 @@
  *
  ******************************************************************************/
 
-#include "device.h"
+#include "mbed-hal-efm32/device.h"
 #if DEVICE_RTC
 
-#include "rtc_api.h"
-#include "rtc_api_HAL.h"
+#include "mbed-hal/rtc_api.h"
+#include "mbed-hal/sleep_api.h"
+
+#include "mbed-hal-efm32/sleepmodes.h"
+#include "mbed-hal-efm32/rtc_api_HAL.h"
+
 #include "em_cmu.h"
 #include "em_rtc.h"
-#include "sleep_api.h"
-#include "sleepmodes.h"
+
+#include "uvisor-lib/uvisor-lib.h"
 
 static bool         rtc_inited  = false;
 static time_t       time_base   = 0;

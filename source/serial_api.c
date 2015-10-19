@@ -22,28 +22,32 @@
  ******************************************************************************/
 
 #include "mbed-hal-efm32/device.h"
-#include "mbed-hal-efm32/clocking.h"
 #if DEVICE_SERIAL
 
-#include "mbed/mbed_assert.h"
-#include "mbed-hal/serial_api.h"
 #include <string.h>
 #include <stdbool.h>
 
+#include "mbed/mbed_assert.h"
+
 #include "mbed-hal/pinmap.h"
+#include "mbed-hal/serial_api.h"
+#include "mbed-hal/dma_api.h"
+#include "mbed-hal/sleep_api.h"
+#include "mbed-hal/buffer.h"
+
+#include "mbed-hal-efm32/clocking.h"
 #include "mbed-hal-efm32/pinmap_function.h"
 #include "mbed-hal-efm32/PeripheralPins.h"
 #include "mbed-hal-efm32/PeripheralNames.h"
+#include "mbed-hal-efm32/dma_api_HAL.h"
+#include "mbed-hal-efm32/sleepmodes.h"
 
 #include "em_usart.h"
 #include "em_leuart.h"
 #include "em_cmu.h"
 #include "em_dma.h"
-#include "mbed-hal-efm32/dma_api_HAL.h"
-#include "mbed-hal/dma_api.h"
-#include "mbed-hal/sleep_api.h"
-#include "mbed-hal/buffer.h"
-#include "mbed-hal-efm32/sleepmodes.h"
+
+#include "uvisor-lib/uvisor-lib.h"
 
 #define SERIAL_LEAST_ACTIVE_SLEEPMODE EM1
 #define SERIAL_LEAST_ACTIVE_SLEEPMODE_LEUART EM2

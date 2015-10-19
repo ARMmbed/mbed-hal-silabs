@@ -24,15 +24,17 @@
 #ifndef MBED_OBJECTS_H
 #define MBED_OBJECTS_H
 
-#include "target_config.h"
-#include "PinNames.h"
-#include "PeripheralNames.h"
-#include "PortNames.h"
+#include "mbed-hal-efm32/target_config.h"
+#include "mbed-hal-efm32/PinNames.h"
+#include "mbed-hal-efm32/PeripheralNames.h"
+#include "mbed-hal-efm32/PortNames.h"
+
 #include "em_i2c.h"
 #include "em_dma.h"
 #include "em_cmu.h"
-#include "dma_api_HAL.h"
-#include "device.h"
+
+#include "mbed-hal-efm32/dma_api_HAL.h"
+#include "mbed-hal-efm32/device.h"
 
 #ifdef __cplusplus
 extern "C" {

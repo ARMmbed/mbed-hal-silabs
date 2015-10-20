@@ -185,9 +185,9 @@ void i2c_enable_interrupt(i2c_t *obj, uint32_t address, uint8_t enable)
     /* Lower IRQ priority to avoid messing with asynch RX on UART */
     vIRQ_SetPriority(irq_number, 1);
     if (enable) {
-        NVIC_EnableIRQ(irq_number);
+        vIRQ_EnableIRQ(irq_number);
     } else {
-        NVIC_DisableIRQ(irq_number);
+        vIRQ_DisableIRQ(irq_number);
     }
 }
 

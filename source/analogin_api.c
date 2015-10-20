@@ -98,16 +98,16 @@ void analogin_enable_pins(analogin_t *obj, uint8_t enable)
 
 void analogin_enable_interrupt(analogin_t *obj, uint32_t address, uint8_t enable)
 {
-    NVIC_SetVector(ADC0_IRQn, address);
+    vIRQ_SetVector(ADC0_IRQn, address);
     if (enable) {
         // enable end of conversion interrupt
         ADC_IntEnable(obj->adc, ADC_IEN_SCAN);
         ADC_IntSet(obj->adc, ADC_IF_SCAN);
-        NVIC_EnableIRQ(ADC0_IRQn);
+        vIRQ_EnableIRQ(ADC0_IRQn);
     } else {
         ADC_IntDisable(obj->adc, ADC_IEN_SCAN);
         ADC_IntClear(obj->adc, ADC_IF_SCAN);
-        NVIC_DisableIRQ(ADC0_IRQn);
+        vIRQ_DisableIRQ(ADC0_IRQn);
     }
 }
 

@@ -806,21 +806,21 @@ void serial_irq_set(serial_t *obj, SerialIrq irq, uint32_t enable)
         if (enable) {
             if (irq == RxIrq) { /* RX */
                 obj->serial.periph.leuart->IEN |= LEUART_IEN_RXDATAV;
-                NVIC_ClearPendingIRQ(serial_get_rx_irq_index(obj));
-                NVIC_EnableIRQ(serial_get_rx_irq_index(obj));
+                vIRQ_ClearPendingIRQ(serial_get_rx_irq_index(obj));
+                vIRQ_EnableIRQ(serial_get_rx_irq_index(obj));
             } else { /* TX */
                 obj->serial.periph.leuart->IEN |= LEUART_IEN_TXC;
-                NVIC_ClearPendingIRQ(serial_get_tx_irq_index(obj));
+                vIRQ_ClearPendingIRQ(serial_get_tx_irq_index(obj));
                 vIRQ_SetPriority(serial_get_tx_irq_index(obj), 1);
-                NVIC_EnableIRQ(serial_get_tx_irq_index(obj));
+                vIRQ_EnableIRQ(serial_get_tx_irq_index(obj));
             }
         } else {
             if (irq == RxIrq) { /* RX */
                 obj->serial.periph.leuart->IEN &= ~LEUART_IEN_RXDATAV;
-                NVIC_DisableIRQ(serial_get_rx_irq_index(obj));
+                vIRQ_DisableIRQ(serial_get_rx_irq_index(obj));
             } else { /* TX */
                 obj->serial.periph.leuart->IEN &= ~LEUART_IEN_TXC;
-                NVIC_DisableIRQ(serial_get_tx_irq_index(obj));
+                vIRQ_DisableIRQ(serial_get_tx_irq_index(obj));
             }
         }
     } else {
@@ -828,21 +828,21 @@ void serial_irq_set(serial_t *obj, SerialIrq irq, uint32_t enable)
         if (enable) {
             if (irq == RxIrq) { /* RX */
                 obj->serial.periph.uart->IEN |= USART_IEN_RXDATAV;
-                NVIC_ClearPendingIRQ(serial_get_rx_irq_index(obj));
-                NVIC_EnableIRQ(serial_get_rx_irq_index(obj));
+                vIRQ_ClearPendingIRQ(serial_get_rx_irq_index(obj));
+                vIRQ_EnableIRQ(serial_get_rx_irq_index(obj));
             } else { /* TX */
                 obj->serial.periph.uart->IEN |= USART_IEN_TXC;
-                NVIC_ClearPendingIRQ(serial_get_tx_irq_index(obj));
+                vIRQ_ClearPendingIRQ(serial_get_tx_irq_index(obj));
                 vIRQ_SetPriority(serial_get_tx_irq_index(obj), 1);
-                NVIC_EnableIRQ(serial_get_tx_irq_index(obj));
+                vIRQ_EnableIRQ(serial_get_tx_irq_index(obj));
             }
         } else {
             if (irq == RxIrq) { /* RX */
                 obj->serial.periph.uart->IEN &= ~USART_IEN_RXDATAV;
-                NVIC_DisableIRQ(serial_get_rx_irq_index(obj));
+                vIRQ_DisableIRQ(serial_get_rx_irq_index(obj));
             } else { /* TX */
                 obj->serial.periph.uart->IEN &= ~USART_IEN_TXC;
-                NVIC_DisableIRQ(serial_get_tx_irq_index(obj));
+                vIRQ_DisableIRQ(serial_get_tx_irq_index(obj));
             }
         }
     }
@@ -1352,11 +1352,11 @@ int serial_tx_asynch(serial_t *obj, void *tx, size_t tx_length, uint8_t tx_width
     // Else, activate interrupt. TXBL will take care of buffer filling through ISR.
     else {
         // Store callback
-        NVIC_ClearPendingIRQ(serial_get_tx_irq_index(obj));
-        NVIC_DisableIRQ(serial_get_tx_irq_index(obj));
+        vIRQ_ClearPendingIRQ(serial_get_tx_irq_index(obj));
+        vIRQ_DisableIRQ(serial_get_tx_irq_index(obj));
         vIRQ_SetPriority(serial_get_tx_irq_index(obj), 1);
         vIRQ_SetVector(serial_get_tx_irq_index(obj), (uint32_t)handler);
-        NVIC_EnableIRQ(serial_get_tx_irq_index(obj));
+        vIRQ_EnableIRQ(serial_get_tx_irq_index(obj));
 
         if(LEUART_REF_VALID(obj->serial.periph.leuart)) {
             // Activate TX and clear TX buffer
@@ -1439,9 +1439,9 @@ void serial_rx_asynch(serial_t *obj, void *rx, size_t rx_length, uint8_t rx_widt
     // Else, activate interrupt. RXDATAV is responsible for incoming data notification.
     else {
         // Store callback
-        NVIC_ClearPendingIRQ(serial_get_rx_irq_index(obj));
+        vIRQ_ClearPendingIRQ(serial_get_rx_irq_index(obj));
         vIRQ_SetVector(serial_get_rx_irq_index(obj), (uint32_t)handler);
-        NVIC_EnableIRQ(serial_get_rx_irq_index(obj));
+        vIRQ_EnableIRQ(serial_get_rx_irq_index(obj));
 
         if(LEUART_REF_VALID(obj->serial.periph.leuart)) {
             // Activate RX and clear RX buffer

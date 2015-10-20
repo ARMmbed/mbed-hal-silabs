@@ -804,6 +804,15 @@ void serial_irq_set(serial_t *obj, SerialIrq irq, uint32_t enable)
     if(LEUART_REF_VALID(obj->serial.periph.leuart)) {
         /* Enable or disable interrupt */
         if (enable) {
+#ifdef LEUART_USING_LFXO
+            if (LEUART_BaudrateGet(obj->serial.periph.leuart) <= (LEUART_LF_REF_FREQ/2)) {
+                blockSleepMode(SERIAL_LEAST_ACTIVE_SLEEPMODE_LEUART);
+            } else {
+                blockSleepMode(SERIAL_LEAST_ACTIVE_SLEEPMODE);
+            }
+#else
+            blockSleepMode(SERIAL_LEAST_ACTIVE_SLEEPMODE);
+#endif
             if (irq == RxIrq) { /* RX */
                 obj->serial.periph.leuart->IEN |= LEUART_IEN_RXDATAV;
                 vIRQ_ClearPendingIRQ(serial_get_rx_irq_index(obj));
@@ -815,6 +824,15 @@ void serial_irq_set(serial_t *obj, SerialIrq irq, uint32_t enable)
                 vIRQ_EnableIRQ(serial_get_tx_irq_index(obj));
             }
         } else {
+#ifdef LEUART_USING_LFXO
+            if (LEUART_BaudrateGet(obj->serial.periph.leuart) <= (LEUART_LF_REF_FREQ/2)) {
+                unblockSleepMode(SERIAL_LEAST_ACTIVE_SLEEPMODE_LEUART);
+            } else {
+                unblockSleepMode(SERIAL_LEAST_ACTIVE_SLEEPMODE);
+            }
+#else
+            unblockSleepMode(SERIAL_LEAST_ACTIVE_SLEEPMODE);
+#endif
             if (irq == RxIrq) { /* RX */
                 obj->serial.periph.leuart->IEN &= ~LEUART_IEN_RXDATAV;
                 vIRQ_DisableIRQ(serial_get_rx_irq_index(obj));
@@ -826,6 +844,7 @@ void serial_irq_set(serial_t *obj, SerialIrq irq, uint32_t enable)
     } else {
         /* Enable or disable interrupt */
         if (enable) {
+            blockSleepMode(SERIAL_LEAST_ACTIVE_SLEEPMODE);
             if (irq == RxIrq) { /* RX */
                 obj->serial.periph.uart->IEN |= USART_IEN_RXDATAV;
                 vIRQ_ClearPendingIRQ(serial_get_rx_irq_index(obj));
@@ -837,6 +856,7 @@ void serial_irq_set(serial_t *obj, SerialIrq irq, uint32_t enable)
                 vIRQ_EnableIRQ(serial_get_tx_irq_index(obj));
             }
         } else {
+            unblockSleepMode(SERIAL_LEAST_ACTIVE_SLEEPMODE);
             if (irq == RxIrq) { /* RX */
                 obj->serial.periph.uart->IEN &= ~USART_IEN_RXDATAV;
                 vIRQ_DisableIRQ(serial_get_rx_irq_index(obj));

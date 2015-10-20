@@ -1,0 +1,1 @@
+add_definitions(-DMBED_HAL_VIRTUAL_NVIC)

@@ -25,7 +25,7 @@
 #if DEVICE_PWMOUT
 #include "cmsis-core/cmsis.h"
 
-#include "mbed/mbed_assert.h"
+#include "mbed-drivers/mbed_assert.h"
 
 #include "mbed-hal/pwmout_api.h"
 #include "mbed-hal/pinmap.h"

@@ -24,7 +24,7 @@
 #include <stddef.h>
 #include "cmsis-core/cmsis.h"
 
-#include "mbed/mbed_assert.h"
+#include "mbed-drivers/mbed_assert.h"
 
 #include "mbed-hal/us_ticker_api.h"
 #include "mbed-hal/sleep_api.h"

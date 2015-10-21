@@ -21,7 +21,7 @@
  *
  ******************************************************************************/
 
-#include "mbed/mbed_assert.h"
+#include "mbed-drivers/mbed_assert.h"
 
 #include "mbed-hal/gpio_api.h"
 #include "mbed-hal/pinmap.h"

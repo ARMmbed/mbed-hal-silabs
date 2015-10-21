@@ -24,7 +24,7 @@
 #include "mbed-hal-efm32/device.h"
 #if DEVICE_ANALOGIN
 
-#include "mbed/mbed_assert.h"
+#include "mbed-drivers/mbed_assert.h"
 #include "mbed-hal/analogin_api.h"
 #include "mbed-hal/pinmap.h"
 

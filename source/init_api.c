@@ -1,5 +1,5 @@
 /***************************************************************************//**
- * @file mbed_overrides.c
+ * @file init_api.c
  *******************************************************************************
  * @section License
  * <b>(C) Copyright 2014-2015 Silicon Labs, http://www.silabs.com</b>
@@ -31,6 +31,8 @@
 #include "mbed-hal-efm32/clocking.h"
 #include "mbed-hal-efm32/device.h"
 
+#include "uvisor-lib/uvisor-lib.h"
+
 gpio_t bc_enable;
 
 
@@ -38,7 +40,10 @@ gpio_t bc_enable;
  * Otherwise, let the application override this if necessary */
 void mbed_hal_init()
 {
-    /* FIXME: Re-add CHIP_Init() */
+    /* FIXME: Re-add CHIP_Init() for uVisor */
+#if !defined(UVISOR_PRESENT)
+    CHIP_Init();
+#endif
 
     /* Set up the clock sources for this chip */
 #if( CORE_CLOCK_SOURCE == HFXO)

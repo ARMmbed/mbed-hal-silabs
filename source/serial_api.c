@@ -27,7 +27,7 @@
 #include <string.h>
 #include <stdbool.h>
 
-#include "mbed/mbed_assert.h"
+#include "mbed-drivers/mbed_assert.h"
 
 #include "mbed-hal/pinmap.h"
 #include "mbed-hal/serial_api.h"

@@ -39,8 +39,10 @@
 #include "em_system.h"
 #include "em_assert.h"
 
-/* FIXME: reapply workaround */
+/* FIXME: reapply workaround for uVisor */
+#if defined(UVISOR_PRESENT)
 #undef ERRATA_FIX_EMU_E107_EN
+#endif
 /***************************************************************************//**
  * @addtogroup EM_Library
  * @{
@@ -80,12 +82,16 @@
   #define NON_WIC_INT_MASK_1    (~(0x0U))
 #elif defined(_EFM32_GIANT_FAMILY)
 // FIXME
-//  #define ERRATA_FIX_EMU_E107_EN
+#if !defined(UVISOR_PRESENT)
+  #define ERRATA_FIX_EMU_E107_EN
+#endif
   #define NON_WIC_INT_MASK_0    (~(0xff020e63U))
   #define NON_WIC_INT_MASK_1    (~(0x00000046U))
 #elif defined(_EFM32_WONDER_FAMILY)
 // FIXME
-//  #define ERRATA_FIX_EMU_E107_EN
+#if !defined(UVISOR_PRESENT)
+  #define ERRATA_FIX_EMU_E107_EN
+#endif
   #define NON_WIC_INT_MASK_0    (~(0xff020e63U))
   #define NON_WIC_INT_MASK_1    (~(0x00000046U))
 #else

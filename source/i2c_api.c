@@ -26,7 +26,7 @@
 #if DEVICE_I2C
 #include <stdio.h>
 
-#include "mbed/mbed_assert.h"
+#include "mbed-drivers/mbed_assert.h"
 
 #include "mbed-hal/i2c_api.h"
 

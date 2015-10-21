@@ -21,7 +21,7 @@
  *
  ******************************************************************************/
 
-#include "mbed/mbed_assert.h"
+#include "mbed-drivers/mbed_assert.h"
 
 #include "mbed-hal/pinmap.h"
 
@@ -39,7 +39,7 @@ void pin_function(PinName pin, int function)
 
 void pin_mode(PinName pin, PinMode mode)
 {
-    MBED_ASSERT((0xFFFFFF00 | pin) != NC);
+    MBED_ASSERT((0xFFFFFF00U | (uint32_t)pin) != (uint32_t)NC);
 
     /* Enable GPIO clock if not already done */
     if (!gpio_clock_inited) {

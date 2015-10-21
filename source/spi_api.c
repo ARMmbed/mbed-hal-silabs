@@ -24,7 +24,7 @@
 #include "mbed-hal-efm32/device.h"
 #if DEVICE_SPI
 
-#include "mbed/mbed_assert.h"
+#include "mbed-drivers/mbed_assert.h"
 
 #include "mbed-hal/pinmap.h"
 #include "mbed-hal/dma_api.h"

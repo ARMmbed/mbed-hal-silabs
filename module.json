@@ -34,10 +34,10 @@
   },
   "targetDependencies": {
     "efm32gg-stk": {
-      "mbed-hal-efm32gg": "~0.1.0"
+      "mbed-hal-efm32gg": "~0.2.0"
     },
     "efm32hg-stk": {
-      "mbed-hal-efm32hg": "~0.1.0"
+      "mbed-hal-efm32hg": "~0.2.0"
     },
     "efm32wg-stk": {
       "mbed-hal-efm32wg": "~0.1.0"

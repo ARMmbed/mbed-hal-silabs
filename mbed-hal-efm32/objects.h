@@ -128,6 +128,7 @@ struct spi_s {
     int location;
     uint8_t bits;
     uint8_t master;
+    uint8_t msbf;
 #if DEVICE_SPI_ASYNCH
     uint32_t event;
     DMA_OPTIONS_t dmaOptionsTX;

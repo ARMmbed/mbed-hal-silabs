@@ -106,8 +106,10 @@ static void usart_init(spi_t *obj, uint32_t baudrate, USART_Databits_TypeDef dat
     init.baudrate = baudrate;
     init.databits = databits;
     init.master = master;
-    init.msbf	= 1;
     init.clockMode = clockMode;
+
+    // use stored value for msbf
+    init.msbf = obj->spi.msbf;
 
     /* Determine the reference clock, because the correct clock is not set up at init time */
     init.refFreq = REFERENCE_FREQUENCY;
@@ -280,8 +282,6 @@ void spi_enable_interrupt(spi_t *obj, uint32_t handler, uint8_t enable)
 
 void spi_format(spi_t *obj, int bits, int mode, spi_bitorder_t order)
 {
-    (void)order;
-
     // mbed HAL currently doesn't support SPI Slave mode
     int slave = 0;
 
@@ -309,6 +309,9 @@ void spi_format(spi_t *obj, int bits, int mode, spi_bitorder_t order)
         default:
             clockMode = usartClockMode0;
     }
+
+    // set bit ordering
+    obj->spi.msbf = (order == SPI_MSB) ? 1 : 0;
 
     //save state
     uint32_t route = obj->spi.spi->ROUTE;

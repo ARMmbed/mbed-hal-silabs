@@ -1288,12 +1288,8 @@ void serial_rx_enable_event(serial_t *obj, int event, uint8_t enable)
  * @param tx        The buffer for sending.
  * @param tx_length The number of words to transmit.
  */
-void serial_tx_buffer_set(serial_t *obj, void *tx, int tx_length, uint8_t width)
+void serial_tx_buffer_set(serial_t *obj, void *tx, int tx_length)
 {
-    (void)width;
-    // We only support byte buffers for now
-    MBED_ASSERT(width == 8);
-
     if(serial_tx_active(obj)) return;
 
     obj->tx_buff.buffer = tx;
@@ -1309,12 +1305,8 @@ void serial_tx_buffer_set(serial_t *obj, void *tx, int tx_length, uint8_t width)
  * @param rx        The buffer for receiving.
  * @param rx_length The number of words to read.
  */
-void serial_rx_buffer_set(serial_t *obj, void *rx, int rx_length, uint8_t width)
+void serial_rx_buffer_set(serial_t *obj, void *rx, int rx_length)
 {
-    (void)width;
-    // We only support byte buffers for now
-    MBED_ASSERT(width == 8);
-
     if(serial_rx_active(obj)) return;
 
     obj->rx_buff.buffer = rx;
@@ -1336,8 +1328,10 @@ void serial_rx_buffer_set(serial_t *obj, void *rx, int rx_length, uint8_t width)
  * @param hint A suggestion for how to use DMA with this transfer
  * @return Returns number of data transfered, or 0 otherwise
  */
-int serial_tx_asynch(serial_t *obj, void *tx, size_t tx_length, uint8_t tx_width, uint32_t handler, uint32_t event, DMAUsage hint)
+int serial_tx_asynch(serial_t *obj, void *tx, size_t tx_length, uint8_t deprecated, uint32_t handler, uint32_t event, DMAUsage hint)
 {
+    (void)deprecated; // Buffer width is deprecated
+
     // Check that a buffer has indeed been set up
     MBED_ASSERT(tx != (void*)0);
     MBED_ASSERT(obj->serial.tx_pin != NC);
@@ -1345,7 +1339,7 @@ int serial_tx_asynch(serial_t *obj, void *tx, size_t tx_length, uint8_t tx_width
     if(tx_length == 0) return 0;
 
     // Set up buffer
-    serial_tx_buffer_set(obj, (void *)tx, tx_length, tx_width);
+    serial_tx_buffer_set(obj, (void *)tx, tx_length);
 
     // Set up events
     serial_tx_enable_event(obj, SERIAL_EVENT_TX_ALL, false);
@@ -1404,8 +1398,10 @@ int serial_tx_asynch(serial_t *obj, void *tx, size_t tx_length, uint8_t tx_width
  * @param cb   The function to call when an event occurs
  * @param hint A suggestion for how to use DMA with this transfer
  */
-void serial_rx_asynch(serial_t *obj, void *rx, size_t rx_length, uint8_t rx_width, uint32_t handler, uint32_t event, uint8_t char_match, DMAUsage hint)
+void serial_rx_asynch(serial_t *obj, void *rx, size_t rx_length, uint8_t deprecated, uint32_t handler, uint32_t event, uint8_t char_match, DMAUsage hint)
 {
+    (void)deprecated; // Buffer width is deprecated
+
     // Check that a buffer has indeed been set up
     MBED_ASSERT(rx != (void*)0);
     MBED_ASSERT(obj->serial.rx_pin != NC);
@@ -1413,7 +1409,7 @@ void serial_rx_asynch(serial_t *obj, void *rx, size_t rx_length, uint8_t rx_widt
     if(rx_length == 0) return;
 
     // Set up buffer
-    serial_rx_buffer_set(obj,(void*) rx, rx_length, rx_width);
+    serial_rx_buffer_set(obj,(void*) rx, rx_length);
 
     //disable character match if no character is specified
     if(char_match == SERIAL_RESERVED_CHAR_MATCH){

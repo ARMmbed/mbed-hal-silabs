@@ -47,7 +47,7 @@
 static uint16_t fill_word = (uint16_t)SPI_FILL_WORD;
 #define SPI_LEAST_ACTIVE_SLEEPMODE EM1
 
-inline CMU_Clock_TypeDef spi_get_clock_tree(spi_t *obj)
+static inline CMU_Clock_TypeDef spi_get_clock_tree(spi_t *obj)
 {
     switch ((int)obj->spi.spi) {
 #ifdef USART0
@@ -68,7 +68,7 @@ inline CMU_Clock_TypeDef spi_get_clock_tree(spi_t *obj)
     }
 }
 
-inline uint8_t spi_get_index(spi_t *obj)
+static inline uint8_t spi_get_index(spi_t *obj)
 {
     uint8_t index = 0;
     switch ((int)obj->spi.spi) {
@@ -946,9 +946,9 @@ void spi_master_transfer_dma(spi_t *obj, void *txdata, void *rxdata, int tx_leng
  *
  * @param[in] obj     The SPI object which holds the transfer information
  * @param[in] tx        The buffer to send
- * @param[in] tx_length The number of words to transmit
+ * @param[in] tx_length The number of packets to transmit
  * @param[in] rx        The buffer to receive
- * @param[in] rx_length The number of words to receive
+ * @param[in] rx_length The number of packets to receive
  * @param[in] event     The logical OR of events to be registered
  * @param[in] handler   SPI interrupt handler
  * @param[in] hint      A suggestion for how to use DMA with this transfer

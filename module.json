@@ -45,9 +45,6 @@
     "efm32lg-stk": {
       "mbed-hal-efm32lg": "~0.1.0"
     },
-    "watch": {
-      "mbed-hal-efm32gg-watch": "~0.2.0"
-    },
     "swo": {
       "swo": "~1.1.0"
     }

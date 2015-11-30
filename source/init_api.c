@@ -59,39 +59,39 @@ void mbed_hal_init()
     CMU_ClockEnable(cmuClock_CORELE, true);
 
 #if( LOW_ENERGY_CLOCK_SOURCE == LFXO )
-#ifdef CMU_LFACLKSEL_REG
+#ifdef _CMU_LFACLKEN0_MASK
     CMU_ClockSelectSet(cmuClock_LFA, cmuSelect_LFXO);
 #endif
-#ifdef CMU_LFBCLKSEL_REG
+#ifdef _CMU_LFBCLKEN0_MASK
     /* cmuClock_LFB (to date) only has LEUART peripherals.
     *  This gets set automatically whenever you create serial objects using LEUART
     */
 #endif
-#ifdef CMU_LFECLKSEL_REG
+#ifdef _CMU_LFECLKEN0_MASK
     CMU_ClockSelectSet(cmuClock_LFE, cmuSelect_LFXO);
 #endif
     SystemLFXOClockSet(LFXO_FREQUENCY);
 
 #elif( LOW_ENERGY_CLOCK_SOURCE == LFRCO )
-#ifdef CMU_LFACLKSEL_REG
+#ifdef _CMU_LFACLKEN0_MASK
     CMU_ClockSelectSet(cmuClock_LFA, cmuSelect_LFRCO);
 #endif
-#ifdef CMU_LFBCLKSEL_REG
+#ifdef _CMU_LFBCLKEN0_MASK
     //CMU_ClockSelectSet(cmuClock_LFB, cmuSelect_LFRCO);
 #endif
-#ifdef CMU_LFECLKSEL_REG
+#ifdef _CMU_LFECLKEN0_MASK
     CMU_ClockSelectSet(cmuClock_LFE, cmuSelect_LFRCO);
 #endif
     CMU_HFRCOBandSet(HFRCO_FREQUENCY);
 
 #elif( LOW_ENERGY_CLOCK_SOURCE == ULFRCO)
-#ifdef CMU_LFACLKSEL_REG
+#ifdef _CMU_LFACLKEN0_MASK
     CMU_ClockSelectSet(cmuClock_LFA, cmuSelect_ULFRCO);
 #endif
-#ifdef CMU_LFBCLKSEL_REG
+#ifdef _CMU_LFBCLKEN0_MASK
     CMU_ClockSelectSet(cmuClock_LFB, cmuSelect_ULFRCO);
 #endif
-#ifdef CMU_LFECLKSEL_REG
+#ifdef _CMU_LFECLKEN0_MASK
     CMU_ClockSelectSet(cmuClock_LFE, cmuSelect_ULFRCO);
 #endif
 #else

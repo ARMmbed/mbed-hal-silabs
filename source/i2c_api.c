@@ -196,7 +196,7 @@ void i2c_frequency(i2c_t *obj, int hz)
 {
     /* Set frequency. As the second argument is 0,
      *  HFPER clock frequency is used as reference freq */
-    I2C_BusFreqSet(obj->i2c.i2c, REFERENCE_FREQUENCY, hz, i2cClockHLRAsymetric);
+    I2C_BusFreqSet(obj->i2c.i2c, REFERENCE_FREQUENCY, hz, i2cClockHLRStandard);
 }
 
 /* Creates a start condition on the I2C bus */

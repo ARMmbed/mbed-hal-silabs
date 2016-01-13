@@ -91,6 +91,8 @@ struct pwmout_s {
     uint16_t width_cycles;
     //Channel on TIMER
     uint32_t channel;
+    //Alternate location
+    uint32_t location;
     PinName pin;
 };
 #endif

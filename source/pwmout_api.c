@@ -60,6 +60,25 @@ uint32_t pwmout_get_channel_route(pwmout_t *obj)
     }
 }
 
+uint32_t pwmout_get_alternate_location(pwmout_t *obj)
+{
+    MBED_ASSERT(obj->location != (PWMName) NC);
+
+    switch (obj->location) {
+        case 0:
+            return TIMER_ROUTE_LOCATION_LOC0;
+            break;
+        case 1:
+            return TIMER_ROUTE_LOCATION_LOC1;
+            break;
+        case 2:
+            return TIMER_ROUTE_LOCATION_LOC2;
+            break;
+        default:
+            return 0;
+    }
+}
+
 void pwmout_enable_pins(pwmout_t *obj, uint8_t enable)
 {
     if (enable) {
@@ -113,9 +132,14 @@ void pwmout_init(pwmout_t *obj, PinName pin)
         pwmout_enable_pins(obj, true);
     }
 
-    /* Route correct channel to location 1 */
+    /* Route to location associated with pin.
+       All PWMs share the same location so mixing pins
+       from different locations will not work. This code
+       will favor the last PWM enabled.
+    */
+    obj->location = pinmap_function(pin, PinMap_PWM);
     PWM_TIMER->ROUTE &= ~_TIMER_ROUTE_LOCATION_MASK;
-    PWM_TIMER->ROUTE |= PWM_ROUTE;
+    PWM_TIMER->ROUTE |= pwmout_get_alternate_location(obj);
 
     /* Set default 20ms frequency and 0ms pulse width */
     pwmout_period(obj, 0.02);
@@ -209,7 +233,7 @@ void pwmout_pulsewidth_ms(pwmout_t *obj, int ms)
 
 void pwmout_pulsewidth_us(pwmout_t *obj, int us)
 {
-    obj->width_cycles = (uint32_t) ((REFERENCE_FREQUENCY >> pwm_prescaler_div) * us) / 1000000;
+    obj->width_cycles = (uint32_t) ((uint64_t)((REFERENCE_FREQUENCY >> pwm_prescaler_div) * (uint64_t) us) / 1000000);
     TIMER_CompareBufSet(PWM_TIMER, obj->channel, obj->width_cycles);
 }
 

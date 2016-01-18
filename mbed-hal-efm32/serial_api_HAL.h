@@ -1,5 +1,5 @@
 /***************************************************************************//**
- * @file pinmap_function.h
+ * @file serial_api_HAL.h
  *******************************************************************************
  * @section License
  * <b>(C) Copyright 2015 Silicon Labs, http://www.silabs.com</b>
@@ -21,35 +21,25 @@
  *
  ******************************************************************************/
 
-#ifndef MBED_PINMAP_FUNCTION_H
-#define MBED_PINMAP_FUNCTION_H
+#ifndef MBED_SERIAL_API_HAL_H
+#define MBED_SERIAL_API_HAL_H
 
-#include "mbed-hal-efm32/PinNames.h"
-#include "mbed-hal/pinmap.h"
+#include "mbed-hal-efm32/device.h"
+
+#ifdef _SILICON_LABS_32B_PLATFORM_2
+
+#define UART_TYPE_USART  0x01
+#define UART_TYPE_LEUART 0x02
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/**
- * Get the value of the function field for a pin in a pinmap
- * @param pin A pin
- * @param map A pinmap for a given peripheral
- * @return Content of function field in pinmap for the given pin
- */
-uint32_t pinmap_get_function_field(PinName pin, const PinMap* map);
-
-/**
- * Get the location a given peripheral is routed to from pin
- * This is stored in the function field of the pinmap
- * @param pin The pin
- * @param map Pinmap for the given peripheral
- * @return uint32 describing location (0, 1, 2, ...)
- */
-uint32_t pin_location(PinName pin, const PinMap* map);
-
 #ifdef __cplusplus
 }
+#endif
+
+
 #endif
 
 #endif

@@ -2,7 +2,7 @@
  * @file i2c_api.c
  *******************************************************************************
  * @section License
- * <b>(C) Copyright 2014-2015 Silicon Labs, http://www.silabs.com</b>
+ * <b>(C) Copyright 2015 Silicon Labs, http://www.silabs.com</b>
  *******************************************************************************
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -97,25 +97,17 @@ static CMU_Clock_TypeDef i2c_get_clock(i2c_t *obj)
     return clock;
 }
 
-void i2c_preinit(i2c_t *obj, PinName sda, PinName scl)
+void i2c_init(i2c_t *obj, PinName sda, PinName scl)
 {
+    /* Find out which I2C peripheral we're asked to use */
     I2CName i2c_sda = (I2CName) pinmap_peripheral(sda, PinMap_I2C_SDA);
     I2CName i2c_scl = (I2CName) pinmap_peripheral(scl, PinMap_I2C_SCL);
     obj->i2c.i2c = (I2C_TypeDef*) pinmap_merge(i2c_sda, i2c_scl);
     MBED_ASSERT(((int) obj->i2c.i2c) != NC);
-
-    int loc_sda = pin_location(sda, PinMap_I2C_SDA);
-    int loc_scl = pin_location(scl, PinMap_I2C_SCL);
-    obj->i2c.loc = pinmap_merge(loc_sda, loc_scl);
-    MBED_ASSERT(obj->i2c.loc != NC);
-    obj->i2c.sda = sda;
-    obj->i2c.scl = scl;
-}
-
-void i2c_init(i2c_t *obj, PinName sda, PinName scl)
-{
-    /* Assign mbed pins */
-    i2c_preinit(obj, sda, scl);
+    
+    /* You need both SDA and SCL for I2C, so configuring one of them to NC is illegal */
+    MBED_ASSERT((uint32_t)sda != (uint32_t)NC);
+    MBED_ASSERT((uint32_t)scl != (uint32_t)NC);
 
     /* Enable clock for the peripheral */
     CMU_ClockEnable(i2c_get_clock(obj), true);
@@ -126,8 +118,25 @@ void i2c_init(i2c_t *obj, PinName sda, PinName scl)
     I2C_Init(obj->i2c.i2c, &i2cInit);
 
     /* Enable pins at correct location */
-    obj->i2c.i2c->ROUTE = I2C_ROUTE_SDAPEN | I2C_ROUTE_SCLPEN | (obj->i2c.loc << _I2C_ROUTE_LOCATION_SHIFT);
-    i2c_enable_pins(obj, true);
+#ifdef I2C_ROUTE_SDAPEN
+    /* Find common location in pinmap */
+    int loc_sda = pin_location(sda, PinMap_I2C_SDA);
+    int loc_scl = pin_location(scl, PinMap_I2C_SCL);
+    int loc = pinmap_merge(loc_sda, loc_scl);
+    MBED_ASSERT(loc != NC);
+    /* Set location */
+    obj->i2c.i2c->ROUTE = I2C_ROUTE_SDAPEN | I2C_ROUTE_SCLPEN | (loc << _I2C_ROUTE_LOCATION_SHIFT);
+#else
+    obj->i2c.i2c->ROUTEPEN  = I2C_ROUTEPEN_SDAPEN | I2C_ROUTEPEN_SCLPEN;
+    obj->i2c.i2c->ROUTELOC0 = (pin_location(sda, PinMap_I2C_SDA) << _I2C_ROUTELOC0_SDALOC_SHIFT) |
+                              (pin_location(scl, PinMap_I2C_SCL) << _I2C_ROUTELOC0_SCLLOC_SHIFT);
+#endif
+
+    /* Set up the pins for I2C use */
+    /* Note: Set up pins in higher drive strength to reduce slew rate */
+    /*   Though this requires user knowledge, since drive strength is controlled per port, not pin */
+    pin_mode(scl, WiredAndPullUp);
+    pin_mode(sda, WiredAndPullUp);
 
     /* Enable General Call Address Mode. That is; we respond to the general address (0x0) */
     obj->i2c.i2c->CTRL |= _I2C_CTRL_GCAMEN_MASK;
@@ -148,19 +157,6 @@ void i2c_enable(i2c_t *obj, uint8_t enable)
         if (obj->i2c.i2c->STATE & I2C_STATE_BUSY) {
             obj->i2c.i2c->CMD = I2C_CMD_ABORT;
         }
-
-    }
-}
-
-void i2c_enable_pins(i2c_t *obj, uint8_t enable)
-{
-    if (enable) {
-        pin_mode(obj->i2c.scl, WiredAndPullUp);
-        pin_mode(obj->i2c.sda, WiredAndPullUp);
-    } else {
-        // TODO_LP return PinMode to the previous state
-        pin_mode(obj->i2c.sda, Disabled);
-        pin_mode(obj->i2c.scl, Disabled);
     }
 }
 
@@ -196,7 +192,23 @@ void i2c_frequency(i2c_t *obj, int hz)
 {
     /* Set frequency. As the second argument is 0,
      *  HFPER clock frequency is used as reference freq */
-    I2C_BusFreqSet(obj->i2c.i2c, REFERENCE_FREQUENCY, hz, i2cClockHLRStandard);
+    if (hz <= 0) return;
+    /* In I2C Normal mode (50% duty), we can go up to 100kHz */
+    if (hz <= 100000) {
+        I2C_BusFreqSet(obj->i2c.i2c, REFERENCE_FREQUENCY, hz, i2cClockHLRStandard);
+    }
+    /* In I2C Fast mode (6:3 ratio), we can go up to 400kHz */
+    else if (hz <= 400000) {
+        I2C_BusFreqSet(obj->i2c.i2c, REFERENCE_FREQUENCY, hz, i2cClockHLRAsymetric);
+    }
+    /* In I2C Fast+ mode (11:6 ratio), we can go up to 1 MHz */
+    else if (hz <= 1000000) {
+        I2C_BusFreqSet(obj->i2c.i2c, REFERENCE_FREQUENCY, hz, i2cClockHLRFast);
+    }
+    /* Cap requested frequency at 1MHz */
+    else {
+        I2C_BusFreqSet(obj->i2c.i2c, REFERENCE_FREQUENCY, 1000000, i2cClockHLRFast);
+    }
 }
 
 /* Creates a start condition on the I2C bus */
@@ -344,82 +356,6 @@ int block_and_wait_for_ack(I2C_TypeDef *i2c)
     }
     return 0; //Timeout
 }
-
-#if DEVICE_I2CSLAVE
-
-#define NoData          0
-#define ReadAddressed   1
-#define WriteGeneral    2
-#define WriteAddressed  3
-
-
-void i2c_slave_mode(i2c_t *obj, int enable_slave)
-{
-    if(enable_slave) {
-        obj->i2c.i2c->CTRL |= _I2C_CTRL_SLAVE_MASK;
-        obj->i2c.i2c->CTRL |= _I2C_CTRL_AUTOACK_MASK; //Slave implementation assumes auto acking
-    } else {
-        obj->i2c.i2c->CTRL &= ~_I2C_CTRL_SLAVE_MASK;
-        obj->i2c.i2c->CTRL &= ~_I2C_CTRL_AUTOACK_MASK; //Master implementation ACKs manually
-    }
-}
-
-int i2c_slave_receive(i2c_t *obj)
-{
-
-    if(obj->i2c.i2c->IF & I2C_IF_ADDR) {
-        obj->i2c.i2c->IFC = I2C_IF_ADDR; //Clear interrupt
-        /*0x00 is the address for general write.
-         The address the master wrote is in RXDATA now
-         and reading it also frees the buffer for the next
-         write which can then be acked. */
-        if(obj->i2c.i2c->RXDATA == 0x00) {
-            return WriteGeneral; //Read the address;
-        }
-
-        if(obj->i2c.i2c->STATE & I2C_STATE_TRANSMITTER) {
-            return ReadAddressed;
-        } else {
-            return WriteAddressed;
-        }
-    }
-
-    return NoData;
-
-}
-
-int i2c_slave_read(i2c_t *obj, char *data, int length)
-{
-    int count;
-    for (count = 0; count < length; count++) {
-        data[count] = i2c_byte_read(obj, 0);
-    }
-
-
-    return count;
-
-}
-
-int i2c_slave_write(i2c_t *obj, const char *data, int length)
-{
-    int count;
-    for (count = 0; count < length; count++) {
-        i2c_byte_write(obj, data[count]);
-    }
-
-    return count;
-}
-
-void i2c_slave_address(i2c_t *obj, int idx, uint32_t address, uint32_t mask)
-{
-    (void)idx;
-    (void)mask;
-
-    obj->i2c.i2c->SADDR = address;
-    obj->i2c.i2c->SADDRMASK = 0xFE;//mask;
-}
-
-#endif //DEVICE_I2CSLAVE
 
 #ifdef DEVICE_I2C_ASYNCH
 

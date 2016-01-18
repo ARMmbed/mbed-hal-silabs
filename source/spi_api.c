@@ -106,7 +106,7 @@ static void usart_init(spi_t *obj, uint32_t baudrate, USART_Databits_TypeDef dat
     init.baudrate = baudrate;
     init.databits = databits;
     init.master = master;
-    init.msbf   = 1;
+    init.msbf   = obj->spi.msbf;
     init.clockMode = clockMode;
 
     /* Determine the reference clock, because the correct clock may not be set up at init time (e.g. before main()) */

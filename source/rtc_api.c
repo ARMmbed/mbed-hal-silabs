@@ -74,7 +74,8 @@ void RTC_IRQHandler(void)
 
 uint32_t rtc_get_32bit(void)
 {
-    return (RTC_CounterGet() + (time_extend << RTC_NUM_BITS));
+    uint32_t pending = (RTC_IntGet() & RTC_IF_OF) ? 1 : 0;
+    return (RTC_CounterGet() + ((time_extend + pending) << RTC_NUM_BITS));
 }
 
 uint64_t rtc_get_full(void)

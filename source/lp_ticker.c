@@ -30,8 +30,13 @@
 
 #include "mbed-hal-efm32/rtc_api_HAL.h"
 
+#ifdef RTCC_COUNT
+#define RTC_NUM_BITS                (32)
+#define RTC_BITMASK                 (0xFFFFFFFFUL)
+#else
 #define RTC_NUM_BITS                (24)
 #define RTC_BITMASK                 (0x00FFFFFFUL)
+#endif
 
 static uint32_t compare_cache = 0xFFFFFFFF;
 
@@ -55,7 +60,11 @@ void lp_ticker_init()
 
     // set compare to all ones: if we set it at 0 (in the past)
     // minar will think it has wrapped
+#ifdef RTCC_COUNT
+    RTCC_ChannelCCVSet(0, RTC_BITMASK);
+#else
     RTC_CompareSet(0, RTC_BITMASK);
+#endif
 }
 
 uint32_t lp_ticker_read()
@@ -74,7 +83,7 @@ void lp_ticker_set_interrupt(uint32_t now_ticks, uint32_t interrupt_ticks)
      * than the RTC can handle is requested, set the maximum interrupt time and rely
      * on caller to reset the interrupt.
      */
-    if ((interrupt_ticks - now_ticks) > RTC_BITMASK)
+    if ((RTC_NUM_BITS < 32) && ((interrupt_ticks - now_ticks) > RTC_BITMASK))
     {
         // set maximum interrupt time
         timestamp_ticks = (now_ticks & RTC_BITMASK) - 1;
@@ -93,10 +102,15 @@ void lp_ticker_set_interrupt(uint32_t now_ticks, uint32_t interrupt_ticks)
     }
 
     /* Set interrupt */
+#ifdef RTCC_COUNT
+    RTCC_ChannelCCVSet(0, (uint32_t)timestamp_ticks);
+    RTCC_IntEnable(RTCC_IEN_CC0);
+#else
     RTC_FreezeEnable(true);
     RTC_CompareSet(0, timestamp_ticks);
     RTC_IntEnable(RTC_IEN_COMP0);
     RTC_FreezeEnable(false);
+#endif
 }
 
 uint32_t lp_ticker_get_overflows_counter(void)

@@ -45,6 +45,9 @@
     "efm32lg-stk": {
       "mbed-hal-efm32lg": "^1.0.0"
     },
+    "efm32pg-stk": {
+      "mbed-hal-efm32pg": "^1.0.0"
+    },
     "swo": {
       "swo": "~1.1.0"
     }

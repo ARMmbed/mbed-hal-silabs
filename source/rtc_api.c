@@ -66,6 +66,7 @@ void RTC_IRQHandler(void)
     }
     if (flags & RTC_IF_COMP0) {
         RTC_IntClear(RTC_IF_COMP0);
+        RTC_IntDisable(RTC_IEN_COMP0);
         if (comp0_handler != NULL) {
             comp0_handler();
         }
@@ -159,6 +160,7 @@ void RTCC_IRQHandler(void)
 
     if (flags & RTCC_IF_CC0) {
         RTCC_IntClear(RTCC_IF_CC0);
+        RTCC_IntDisable(RTCC_IEN_CC0);
         if (comp0_handler != NULL) {
             comp0_handler();
         }
@@ -207,6 +209,9 @@ void rtc_init_real(uint32_t flags)
 
         /* Initialize */
         RTCC_Init(&init);
+        
+        RTCC_CCChConf_TypeDef ccchConf = RTCC_CH_INIT_COMPARE_DEFAULT;
+        RTCC_ChannelInit(0,&ccchConf);
 
         blockSleepMode(RTCC_LEAST_ACTIVE_SLEEPMODE);
         rtc_inited = true;

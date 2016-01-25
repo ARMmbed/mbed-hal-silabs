@@ -60,6 +60,9 @@ typedef enum {
     PWM_CH0 = 0,
     PWM_CH1 = 1,
     PWM_CH2 = 2,
+#ifdef TIMER_ROUTEPEN_CC0PEN
+    PWM_CH3 = 3,
+#endif
 } PWMName;
 #endif
 

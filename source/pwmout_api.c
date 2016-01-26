@@ -279,6 +279,7 @@ float pwmout_calculate_duty(uint32_t width_cycles, uint32_t period_cycles) {
 // Set the PWM period, keeping the duty cycle the same.
 void pwmout_period(pwmout_t *obj, float seconds)
 {
+    (void)obj;
     // Find the lowest prescaler divider possible.
     // This gives us max resolution for a given period
 

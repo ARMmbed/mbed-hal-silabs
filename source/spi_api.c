@@ -491,9 +491,11 @@ static void spi_buffer_rx_read(spi_t *obj)
         } else if (obj->spi.spi->STATUS & USART_STATUS_RXFULL) {
             // Read from the buffer to lower the interrupt flag
             volatile uint32_t data = (uint32_t)obj->spi.spi->RXDOUBLE;
+            (void)data;
         } else if (obj->spi.spi->STATUS & USART_STATUS_RXDATAV) {
             // Read from the buffer to lower the interrupt flag
             volatile uint32_t data = (uint32_t)obj->spi.spi->RXDATA;
+            (void)data;
         }
     } else {
         // Data bits is multiple of 9, so use the extended registers
@@ -519,9 +521,11 @@ static void spi_buffer_rx_read(spi_t *obj)
         } else if (obj->spi.spi->STATUS & USART_STATUS_RXFULL) {
             // Read from the buffer to lower the interrupt flag
             volatile uint32_t data = (uint32_t)obj->spi.spi->RXDOUBLEX;
+            (void)data;
         } else if (obj->spi.spi->STATUS & USART_STATUS_RXDATAV) {
             // Read from the buffer to lower the interrupt flag
             volatile uint32_t data = (uint32_t)obj->spi.spi->RXDATAX;
+            (void)data;
         }
     }
 }
@@ -1026,7 +1030,7 @@ void spi_master_transfer(spi_t *obj, void *tx, size_t tx_length, void *rx, size_
 
     /* update fill word if on 9-bit frame size */
     if(obj->spi.bits == 9) fill_word = SPI_FILL_WORD & 0x1FF;
-    else fill_word = SPI_FILL_WORD;
+    else fill_word = (uint16_t)SPI_FILL_WORD;
 
     /* check corner case */
     if(tx_length == 0) {
@@ -1157,7 +1161,7 @@ uint32_t spi_irq_handler_asynch(spi_t* obj)
                 DMA_CfgDescr_TypeDef txDescrCfg;
 
                 if(obj->spi.bits != 9) {
-                    fill_word = SPI_FILL_WORD;
+                    fill_word = (uint16_t)SPI_FILL_WORD;
                     /* Setting up channel descriptor */
                     txDescrCfg.dstInc = dmaDataIncNone;
                     txDescrCfg.srcInc = dmaDataIncNone; //Do not increment source pointer when there is no transmit buffer

@@ -1148,6 +1148,7 @@ void serial_pinout_tx(PinName tx)
 ******************************************/
 static void serial_dmaTransferComplete(unsigned int channel, bool primary, void *user)
 {
+    (void)primary;
     /* Store information about which channel triggered because CPP doesn't take arguments */
     serial_dma_irq_fired[channel] = true;
 
@@ -1583,6 +1584,7 @@ void serial_tx_buffer_set(serial_t *obj, void *tx, int tx_length, uint8_t width)
 {
     // We only support byte buffers for now
     MBED_ASSERT(width == 8);
+    (void)width;
 
     if(serial_tx_active(obj)) return;
 
@@ -1603,6 +1605,7 @@ void serial_rx_buffer_set(serial_t *obj, void *rx, int rx_length, uint8_t width)
 {
     // We only support byte buffers for now
     MBED_ASSERT(width == 8);
+    (void)width;
 
     if(serial_rx_active(obj)) return;
 

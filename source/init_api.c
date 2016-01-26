@@ -47,13 +47,20 @@ void mbed_hal_init()
 
     /* Set up the clock sources for this chip */
 #if( CORE_CLOCK_SOURCE == HFXO)
-    CMU_ClockSelectSet(cmuClock_HF, cmuSelect_HFXO);
+    /* Set SystemHFXOClock variable before changing system clock */
     SystemHFXOClockSet(HFXO_FREQUENCY);
+    CMU_ClockSelectSet(cmuClock_HF, cmuSelect_HFXO);
 #elif( CORE_CLOCK_SOURCE == HFRCO)
-    CMU_ClockSelectSet(cmuClock_HF, cmuSelect_HFRCO);
+#  if defined(_CMU_HFRCOCTRL_BAND_MASK)
     CMU_HFRCOBandSet(HFRCO_FREQUENCY);
+#  elif defined(_CMU_HFRCOCTRL_FREQRANGE_MASK)
+    CMU_HFRCOFreqSet(HFRCO_FREQUENCY);
+#  else
+#    error "HFRCO frequency not defined"
+#endif
+    CMU_ClockSelectSet(cmuClock_HF, cmuSelect_HFRCO);
 #else
-#error "Core clock selection not valid (mbed_overrides.c)"
+#  error "Core clock selection not valid (mbed_overrides.c)"
 #endif
 
     CMU_ClockEnable(cmuClock_CORELE, true);
@@ -64,8 +71,8 @@ void mbed_hal_init()
 #endif
 #ifdef _CMU_LFBCLKEN0_MASK
     /* cmuClock_LFB (to date) only has LEUART peripherals.
-    *  This gets set automatically whenever you create serial objects using LEUART
-    */
+     * This gets set automatically whenever you create serial objects using LEUART
+     */
 #endif
 #ifdef _CMU_LFECLKEN0_MASK
     CMU_ClockSelectSet(cmuClock_LFE, cmuSelect_LFXO);
@@ -77,19 +84,22 @@ void mbed_hal_init()
     CMU_ClockSelectSet(cmuClock_LFA, cmuSelect_LFRCO);
 #endif
 #ifdef _CMU_LFBCLKEN0_MASK
-    //CMU_ClockSelectSet(cmuClock_LFB, cmuSelect_LFRCO);
+    /* cmuClock_LFB (to date) only has LEUART peripherals.
+     * The LEUART requires LFXO.
+     */
 #endif
 #ifdef _CMU_LFECLKEN0_MASK
     CMU_ClockSelectSet(cmuClock_LFE, cmuSelect_LFRCO);
 #endif
-    CMU_HFRCOBandSet(HFRCO_FREQUENCY);
 
 #elif( LOW_ENERGY_CLOCK_SOURCE == ULFRCO)
 #ifdef _CMU_LFACLKEN0_MASK
     CMU_ClockSelectSet(cmuClock_LFA, cmuSelect_ULFRCO);
 #endif
 #ifdef _CMU_LFBCLKEN0_MASK
-    CMU_ClockSelectSet(cmuClock_LFB, cmuSelect_ULFRCO);
+    /* cmuClock_LFB (to date) only has LEUART peripherals.
+     * The LEUART requires LFXO.
+     */
 #endif
 #ifdef _CMU_LFECLKEN0_MASK
     CMU_ClockSelectSet(cmuClock_LFE, cmuSelect_ULFRCO);

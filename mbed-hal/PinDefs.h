@@ -48,17 +48,21 @@ typedef enum {
     InputPullFilterDown = gpioModeInputPullFilter,
     InputPullFilterUp   = gpioModeInputPullFilter | 0x10,
     PushPull            = gpioModePushPull,
+#if defined( _GPIO_P_MODEL_MODE0_PUSHPULLDRIVE )
     PushPullDrive       = gpioModePushPullDrive,
+#endif
     WiredOr             = gpioModeWiredOr,
     WiredOrPullDown     = gpioModeWiredOrPullDown,
     WiredAnd            = gpioModeWiredAnd,
     WiredAndFilter      = gpioModeWiredAndFilter,
     WiredAndPullUp      = gpioModeWiredAndPullUp,
     WiredAndPullUpFilter = gpioModeWiredAndPullUpFilter,
+#if defined( _GPIO_P_MODEL_MODE0_WIREDANDDRIVE )
     WiredAndDrive       = gpioModeWiredAndDrive,
     WiredAndDriveFilter = gpioModeWiredAndDriveFilter,
     WiredAndDrivePullUp = gpioModeWiredAndDrivePullUp,
     WiredAndDrivePullUpFilter = gpioModeWiredAndDrivePullUpFilter,
+#endif
 
     /* mbed modes:
      * PullUp, PullDown, PullNone, OpenDrain

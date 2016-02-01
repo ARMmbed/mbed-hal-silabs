@@ -2,7 +2,7 @@
  * @file gpio_api.c
  *******************************************************************************
  * @section License
- * <b>(C) Copyright 2014-2015 Silicon Labs, http://www.silabs.com</b>
+ * <b>(C) Copyright 2015 Silicon Labs, http://www.silabs.com</b>
  *******************************************************************************
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -50,7 +50,7 @@ int gpio_read(gpio_t *obj)
 
 int gpio_is_connected(const gpio_t *obj)
 {
-    return (obj->pin | 0xFFFFFF00U) != (uint32_t)NC;
+    return ((uint32_t)obj->pin | 0xFFFFFF00 ) != (uint32_t)((PinName)NC);
 }
 
 /*
@@ -73,21 +73,12 @@ void gpio_init(gpio_t *obj, PinName pin)
     obj->pin = pin;
 }
 
-void gpio_pin_enable(gpio_t *obj, uint8_t enable)
-{
-    if (obj->pin != NC)
-    {
-        if (enable) {
-            pin_mode(obj->pin, obj->mode);
-        } else {
-            pin_mode(obj->pin, Disabled); // TODO_LP return mode to default value
-        }
-    }
-}
-
 void gpio_mode(gpio_t *obj, PinMode mode)
 {
-        if(obj->dir == PIN_INPUT) {
+    uint32_t pin = 1 << (obj->pin & 0xF);
+    uint32_t port = (obj->pin >> 4) & 0xF;
+
+    if(obj->dir == PIN_INPUT) {
         switch(mode) {
             case PullDefault:
                 mode = Input;
@@ -105,10 +96,18 @@ void gpio_mode(gpio_t *obj, PinMode mode)
         //Handle DOUT setting
         if((mode & 0x10) != 0) {
             //Set DOUT
-            GPIO->P[(obj->pin >> 4) & 0xF].DOUTSET = 1 << (obj->pin & 0xF);
+#ifdef _GPIO_P_DOUTSET_MASK
+            GPIO->P[port].DOUTSET = pin;
+#else
+            GPIO->P[port].DOUT |= pin;
+#endif
         } else {
             //Clear DOUT
-            GPIO->P[(obj->pin >> 4) & 0xF].DOUTCLR = 1 << (obj->pin & 0xF);
+#ifdef _GPIO_P_DOUTCLR_MASK
+            GPIO->P[port].DOUTCLR = pin;
+#else
+            GPIO->P[port].DOUT &= ~pin;
+#endif
         }
     } else {
         switch(mode) {

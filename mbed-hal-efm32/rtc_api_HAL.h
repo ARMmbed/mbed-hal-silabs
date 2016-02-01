@@ -2,7 +2,7 @@
  * @file rtc_api_HAL.h
  *******************************************************************************
  * @section License
- * <b>(C) Copyright 2014-2015 Silicon Labs, http://www.silabs.com</b>
+ * <b>(C) Copyright 2015 Silicon Labs, http://www.silabs.com</b>
  *******************************************************************************
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -26,7 +26,12 @@
 
 #include <stdint.h>
 #include "mbed-hal/rtc_api.h"
+
+#ifdef RTCC_COUNT
+#include "em_rtcc.h"
+#elif defined(RTC_COUNT)
 #include "em_rtc.h"
+#endif
 
 #define RTC_CLOCKDIV 		cmuClkDiv_8
 #define RTC_CLOCKDIV_INT	8

@@ -2,7 +2,7 @@
  * @file analogin_api.c
  *******************************************************************************
  * @section License
- * <b>(C) Copyright 2014-2015 Silicon Labs, http://www.silabs.com</b>
+ * <b>(C) Copyright 2015 Silicon Labs, http://www.silabs.com</b>
  *******************************************************************************
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -35,28 +35,16 @@
 #include "em_cmu.h"
 
 #include "uvisor-lib/uvisor-lib.h"
-
-uint8_t analogin_get_index(analogin_t *obj)
-{
-    (void)obj;
-    return 0; //only one module availalbe
-}
-
-void analogin_preinit(analogin_t *obj, PinName pin)
-{
-    obj->adc = (ADC_TypeDef *) pinmap_peripheral(pin, PinMap_ADC);
-    MBED_ASSERT((int) obj->adc != NC);
-
-    obj->channel = pin_location(pin, PinMap_ADC);
-    MBED_ASSERT((int) obj->channel != NC);
-}
-
 void analogin_init(analogin_t *obj, PinName pin)
 {
     static uint8_t adc_initialized = 0;
 
     /* Init structure */
-    analogin_preinit(obj, pin);
+    obj->adc = (ADC_TypeDef *) pinmap_peripheral(pin, PinMap_ADC);
+    MBED_ASSERT((int) obj->adc != NC);
+
+    obj->channel = pin_location(pin, PinMap_ADC);
+    MBED_ASSERT((int) obj->channel != NC);
 
     /* Only initialize the ADC once */
     if (!adc_initialized) {
@@ -82,35 +70,6 @@ void analogin_init(analogin_t *obj, PinName pin)
     }
 }
 
-void analogin_enable(analogin_t *obj, uint8_t enable)
-{
-    //not avail for EFM32
-    (void)obj;
-    (void)enable;
-}
-
-void analogin_enable_pins(analogin_t *obj, uint8_t enable)
-{
-    //not avail for EFM32
-    (void)obj;
-    (void)enable;
-}
-
-void analogin_enable_interrupt(analogin_t *obj, uint32_t address, uint8_t enable)
-{
-    vIRQ_SetVector(ADC0_IRQn, address);
-    if (enable) {
-        // enable end of conversion interrupt
-        ADC_IntEnable(obj->adc, ADC_IEN_SCAN);
-        ADC_IntSet(obj->adc, ADC_IF_SCAN);
-        vIRQ_EnableIRQ(ADC0_IRQn);
-    } else {
-        ADC_IntDisable(obj->adc, ADC_IEN_SCAN);
-        ADC_IntClear(obj->adc, ADC_IF_SCAN);
-        vIRQ_DisableIRQ(ADC0_IRQn);
-    }
-}
-
 uint16_t analogin_read_u16(analogin_t *obj)
 {
     ADC_TypeDef *adc = obj->adc;
@@ -120,7 +79,11 @@ uint16_t analogin_read_u16(analogin_t *obj)
     adc->CMD = ADC_CMD_SINGLESTOP;
 
     // Make sure we are checking the correct channel
+#if defined _ADC_SINGLECTRL_INPUTSEL_MASK
     adc->SINGLECTRL = (adc->SINGLECTRL & ~_ADC_SINGLECTRL_INPUTSEL_MASK) | obj->channel;
+#elif _ADC_SINGLECTRL_POSSEL_MASK
+    adc->SINGLECTRL = (adc->SINGLECTRL & ~_ADC_SINGLECTRL_POSSEL_MASK) | obj->channel << _ADC_SINGLECTRL_POSSEL_SHIFT;
+#endif
 
     ADC_Start(adc, adcStartSingle);
 

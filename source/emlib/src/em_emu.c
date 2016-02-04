@@ -39,6 +39,8 @@
 #include "em_system.h"
 #include "em_assert.h"
 
+#include "uvisor-lib/uvisor-lib.h"
+
 /***************************************************************************//**
  * @addtogroup EM_Library
  * @{
@@ -79,7 +81,7 @@
 #define NON_WIC_INT_MASK_1    (~(0x0U))
 
 #elif defined( _EFM32_GIANT_FAMILY )
-#define ERRATA_FIX_EMU_E107_EN
+//#define ERRATA_FIX_EMU_E107_EN
 #define NON_WIC_INT_MASK_0    (~(0xff020e63U))
 #define NON_WIC_INT_MASK_1    (~(0x00000046U))
 
@@ -284,19 +286,22 @@ static __INLINE bool getErrataFixEmuE107En(void)
   /* SYSTEM_ChipRevisionGet could have been used here, but we would like a
    * faster implementation in this case.
    */
-  uint16_t majorMinorRev;
+  static uint16_t majorMinorRev = 0xFFFFU;
 
-  /* CHIP MAJOR bit [3:0] */
-  majorMinorRev = ((ROMTABLE->PID0 & _ROMTABLE_PID0_REVMAJOR_MASK)
-                   >> _ROMTABLE_PID0_REVMAJOR_SHIFT)
-                  << 8;
-  /* CHIP MINOR bit [7:4] */
-  majorMinorRev |= ((ROMTABLE->PID2 & _ROMTABLE_PID2_REVMINORMSB_MASK)
-                    >> _ROMTABLE_PID2_REVMINORMSB_SHIFT)
-                   << 4;
-  /* CHIP MINOR bit [3:0] */
-  majorMinorRev |= (ROMTABLE->PID3 & _ROMTABLE_PID3_REVMINORLSB_MASK)
-                   >> _ROMTABLE_PID3_REVMINORLSB_SHIFT;
+  if (majorMinorRev == 0xFFFFU)
+  {
+    /* CHIP MAJOR bit [3:0] */
+    majorMinorRev = ((uvisor_read32((volatile uint32_t *)&ROMTABLE->PID0) & _ROMTABLE_PID0_REVMAJOR_MASK)
+                     >> _ROMTABLE_PID0_REVMAJOR_SHIFT)
+                    << 8;
+    /* CHIP MINOR bit [7:4] */
+    majorMinorRev |= ((uvisor_read32((volatile uint32_t *)&ROMTABLE->PID2) & _ROMTABLE_PID2_REVMINORMSB_MASK)
+                      >> _ROMTABLE_PID2_REVMINORMSB_SHIFT)
+                     << 4;
+    /* CHIP MINOR bit [3:0] */
+    majorMinorRev |= (uvisor_read32((volatile uint32_t *)&ROMTABLE->PID3) & _ROMTABLE_PID3_REVMINORLSB_MASK)
+                     >> _ROMTABLE_PID3_REVMINORLSB_SHIFT;
+  }
 
 #if defined( _EFM32_GECKO_FAMILY )
   return (majorMinorRev <= 0x0103);
@@ -425,7 +430,7 @@ void EMU_EnterEM2(bool restore)
 #endif
 
   /* Enter Cortex deep sleep mode */
-  SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
+  uvisor_write32((volatile uint32_t *)&SCB->SCR, uvisor_read32((volatile uint32_t *)&SCB->SCR) | SCB_SCR_SLEEPDEEP_Msk);
 
   /* Fix for errata EMU_E107 - store non-WIC interrupt enable flags.
      Disable the enabled non-WIC interrupts. */
@@ -556,7 +561,7 @@ void EMU_EnterEM3(bool restore)
   }
 
   /* Enter Cortex deep sleep mode */
-  SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
+  uvisor_write32((volatile uint32_t *)&SCB->SCR, uvisor_read32((volatile uint32_t *)&SCB->SCR) | SCB_SCR_SLEEPDEEP_Msk);
 
   /* Fix for errata EMU_E107 - store non-WIC interrupt enable flags.
      Disable the enabled non-WIC interrupts. */

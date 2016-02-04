@@ -41,7 +41,7 @@ gpio_t bc_enable;
 void mbed_hal_init()
 {
     /* FIXME: Re-add CHIP_Init() for uVisor */
-#if !defined(UVISOR_PRESENT)
+#if !defined(YOTTA_CFG_UVISOR_PRESENT)
     CHIP_Init();
 #endif
 

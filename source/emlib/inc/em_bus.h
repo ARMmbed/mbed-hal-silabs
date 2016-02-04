@@ -35,6 +35,10 @@
 
 #include "em_device.h"
 
+#undef BITBAND_PER_BASE
+#undef PER_BITSET_MEM_BASE
+#undef PER_BITCLR_MEM_BASE
+
 #ifdef __cplusplus
 extern "C" {
 #endif

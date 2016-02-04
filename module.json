@@ -30,7 +30,7 @@
   "dependencies": {
     "mbed-hal": "*",
     "cmsis-core": "*",
-    "uvisor-lib": "~0.9.0"
+    "uvisor-lib": "^1.0.0"
   },
   "targetDependencies": {
     "efm32gg-stk": {

@@ -429,7 +429,7 @@ void spi_buffer_set(spi_t *obj, void *tx, uint32_t tx_length, void *rx, uint32_t
 
     if((obj->spi.bits == 9) && (tx != 0)) {
         // Make sure we don't have inadvertent non-zero bits outside 9-bit frames which could trigger unwanted operation
-        for(i = 0; i < (tx_length / 2); i++) {
+        for(i = 0; i < tx_length; i++) {
             tx_ptr[i] &= 0x1FF;
         }
     }
@@ -862,8 +862,8 @@ static void spi_activate_dma(spi_t *obj, void* rxdata, const void* txdata, int t
 *
 *   * rxdata: pointer to RX buffer, if needed.
 *   * txdata: pointer to TX buffer, if needed. Else FF's.
-*   * tx_length: how many bytes will get sent.
-*   * rx_length: how many bytes will get received. If > tx_length, TX will get padded with n lower bits of SPI_FILL_WORD.
+*   * tx_length: how many USART frames will be sent.
+*   * rx_length: how many USART frames will be received. If > tx_length, TX will get padded with n lower bits of SPI_FILL_WORD.
 ******************************************/
 static void spi_activate_dma(spi_t *obj, void* rxdata, const void* txdata, int tx_length, int rx_length)
 {
@@ -876,12 +876,6 @@ static void spi_activate_dma(spi_t *obj, void* rxdata, const void* txdata, int t
 
     if (tx_length > DMA_MAX_TRANSFER) {
         uint32_t max_length = DMA_MAX_TRANSFER;
-
-        /* Make sure only an even amount of bytes are transferred
-           if the width is larger than 8 bits. */
-        if (obj->spi.bits > 8) {
-            max_length = DMA_MAX_TRANSFER - (DMA_MAX_TRANSFER & 0x01);
-        }
 
         /* Update length for current transfer. */
         tx_length = max_length;
@@ -936,7 +930,7 @@ static void spi_activate_dma(spi_t *obj, void* rxdata, const void* txdata, int t
 
             /* Activate RX channel */
             DMA_ActivateBasic(obj->spi.dmaOptionsRX.dmaChannel, true, false, rxdata, (void *)&(obj->spi.spi->RXDATAX),
-                              (rx_length / 2) - 1);
+                              rx_length - 1);
         }
 
         /* Setting up channel descriptor */
@@ -1140,7 +1134,12 @@ uint32_t spi_irq_handler_asynch(spi_t* obj)
         /* If there is still data in the TX buffer, setup a new transfer. */
         if (obj->tx_buff.pos < obj->tx_buff.length) {
             /* Find position and remaining length without modifying tx_buff. */
-            void* tx_pointer = (char*)obj->tx_buff.buffer + obj->tx_buff.pos;
+            void* tx_pointer;
+            if(obj->spi.bits > 8) {
+                tx_pointer = (uint8_t *)obj->tx_buff.buffer + obj->tx_buff.pos;
+            } else {
+                tx_pointer = (uint16_t *)obj->tx_buff.buffer + obj->tx_buff.pos;
+            }
             uint32_t tx_length = obj->tx_buff.length - obj->tx_buff.pos;
 
             /* Begin transfer. Rely on spi_activate_dma to split up the transfer further. */
@@ -1176,7 +1175,7 @@ uint32_t spi_irq_handler_asynch(spi_t* obj)
                                         false,
                                         (obj->spi.bits <= 8 ? (void *)&(obj->spi.spi->TXDATA) : (void *)&(obj->spi.spi->TXDOUBLE)), //When frame size > 9, point to TXDOUBLE
                                         &fill_word, // When there is nothing to transmit, point to static fill word
-                                        (obj->spi.bits <= 8 ? length_diff - 1 : (length_diff / 2) - 1)); // When using TXDOUBLE, recalculate transfer length
+                                        (length_diff - 1)); // When using TXDOUBLE, recalculate transfer length
                 } else {
                     /* Setting up channel descriptor */
                     fill_word = SPI_FILL_WORD & 0x1FF;
@@ -1192,7 +1191,7 @@ uint32_t spi_irq_handler_asynch(spi_t* obj)
                                         false,
                                         (void *)&(obj->spi.spi->TXDATAX), //When frame size > 9, point to TXDOUBLE
                                         &fill_word, // When there is nothing to transmit, point to static fill word
-                                        (length_diff / 2) - 1);
+                                        (length_diff - 1));
                 }
             } else return 0;
         }

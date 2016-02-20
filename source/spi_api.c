@@ -1023,8 +1023,11 @@ void spi_master_transfer(spi_t *obj, void *tx, size_t tx_length, void *rx, size_
     if( spi_active(obj) ) return;
 
     /* update fill word if on 9-bit frame size */
-    if(obj->spi.bits == 9) fill_word = SPI_FILL_WORD & 0x1FF;
-    else fill_word = (uint16_t)SPI_FILL_WORD;
+    if(obj->spi.bits == 9) {
+        fill_word = SPI_FILL_WORD & 0x1FF;
+    } else {
+        fill_word = (uint16_t)SPI_FILL_WORD;
+    }
 
     /* check corner case */
     if(tx_length == 0) {
@@ -1136,9 +1139,9 @@ uint32_t spi_irq_handler_asynch(spi_t* obj)
             /* Find position and remaining length without modifying tx_buff. */
             void* tx_pointer;
             if(obj->spi.bits > 8) {
-                tx_pointer = (uint8_t *)obj->tx_buff.buffer + obj->tx_buff.pos;
-            } else {
                 tx_pointer = (uint16_t *)obj->tx_buff.buffer + obj->tx_buff.pos;
+            } else {
+                tx_pointer = (uint8_t *)obj->tx_buff.buffer + obj->tx_buff.pos;
             }
             uint32_t tx_length = obj->tx_buff.length - obj->tx_buff.pos;
 

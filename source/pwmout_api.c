@@ -134,7 +134,7 @@ bool pwmout_all_inactive(void) {
         return true;
     }
 #else
-    if(PWM_TIMER->ROUTE == PWM_ROUTE) {
+    if(PWM_TIMER->ROUTE & (TIMER_ROUTE_CC0PEN | TIMER_ROUTE_CC1PEN | TIMER_ROUTE_CC2PEN)) {
         return true;
     }
 #endif
@@ -213,7 +213,12 @@ void pwmout_init(pwmout_t *obj, PinName pin)
 #else
     // On P1, the route location is statically defined for the entire timer.
     PWM_TIMER->ROUTE &= ~_TIMER_ROUTE_LOCATION_MASK;
-    PWM_TIMER->ROUTE |= PWM_ROUTE;
+
+    if(pwmout_all_inactive()) {
+        PWM_TIMER->ROUTE |= pinmap_find_function(pin,PinMap_PWM) << _TIMER_ROUTE_LOCATION_SHIFT;
+    } else {
+        MBED_ASSERT((pinmap_find_function(pin,PinMap_PWM) << _TIMER_ROUTE_LOCATION_SHIFT) == (PWM_TIMER->ROUTE & _TIMER_ROUTE_LOCATION_MASK));
+    }
 #endif
 
     // Set default 20ms frequency and 0ms pulse width

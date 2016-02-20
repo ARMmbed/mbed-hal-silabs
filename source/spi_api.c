@@ -881,6 +881,9 @@ static void spi_activate_dma(spi_t *obj, void* rxdata, const void* txdata, int t
         tx_length = max_length;
     }
 
+    /* TODO: allow reception using DMA of over the max transfer size */
+    MBED_ASSERT(rx_length <= DMA_MAX_TRANSFER);
+
     /* Save amount of TX done by DMA */
     obj->tx_buff.pos += tx_length;
 
@@ -1128,9 +1131,7 @@ uint32_t spi_irq_handler_asynch(spi_t* obj)
 #else
 uint32_t spi_irq_handler_asynch(spi_t* obj)
 {
-
     /* Determine whether the current scenario is DMA or IRQ, and act accordingly */
-
     if (obj->spi.dmaOptionsTX.dmaUsageState == DMA_USAGE_ALLOCATED || obj->spi.dmaOptionsTX.dmaUsageState == DMA_USAGE_TEMPORARY_ALLOCATED) {
         /* DMA implementation */
 

@@ -40,11 +40,6 @@ gpio_t bc_enable;
  * Otherwise, let the application override this if necessary */
 void mbed_hal_init()
 {
-    /* FIXME: Re-add CHIP_Init() for uVisor */
-#if !defined(UVISOR_PRESENT)
-    CHIP_Init();
-#endif
-
     /* Set up the clock sources for this chip */
 #if( CORE_CLOCK_SOURCE == HFXO)
     /* Set SystemHFXOClock variable before changing system clock */

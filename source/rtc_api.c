@@ -204,8 +204,8 @@ void rtc_init_real(uint32_t flags)
 
         /* Enable Interrupt from RTC */
         RTCC_IntEnable(RTCC_IEN_OF);
-        vIRQ_EnableIRQ(RTCC_IRQn);
         vIRQ_SetVector(RTCC_IRQn, (uint32_t)RTCC_IRQHandler);
+        vIRQ_EnableIRQ(RTCC_IRQn);
 
         /* Initialize */
         RTCC_Init(&init);

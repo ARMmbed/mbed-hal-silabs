@@ -39,6 +39,8 @@
 #include "em_system.h"
 #include "em_assert.h"
 
+#include "uvisor-lib/uvisor-lib.h"
+
 /***************************************************************************//**
  * @addtogroup EM_Library
  * @{
@@ -67,6 +69,10 @@
 
 
 /** @cond DO_NOT_INCLUDE_WITH_DOXYGEN */
+#if YOTTA_CFG_UVISOR_PRESENT
+// Accesses to ROMTABLE and NVIC not allowed with uVisor.
+// TODO: Find a way to apply this errata fix.
+#else
 /* Fix for errata EMU_E107 - non-WIC interrupt masks. */
 #if defined( _EFM32_GECKO_FAMILY )
 #define ERRATA_FIX_EMU_E107_EN
@@ -79,6 +85,7 @@
 #define NON_WIC_INT_MASK_1    (~(0x0U))
 
 #elif defined( _EFM32_GIANT_FAMILY )
+
 #define ERRATA_FIX_EMU_E107_EN
 #define NON_WIC_INT_MASK_0    (~(0xff020e63U))
 #define NON_WIC_INT_MASK_1    (~(0x00000046U))
@@ -91,6 +98,7 @@
 #else
 /* Zero Gecko and future families are not affected by errata EMU_E107 */
 #endif
+#endif //YOTTA_CFG_UVISOR_PRESENT
 
 /* Fix for errata EMU_E108 - High Current Consumption on EM4 Entry. */
 #if defined( _EFM32_HAPPY_FAMILY )
@@ -425,7 +433,7 @@ void EMU_EnterEM2(bool restore)
 #endif
 
   /* Enter Cortex deep sleep mode */
-  SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
+  uvisor_write32((volatile uint32_t *)&SCB->SCR, uvisor_read32((volatile uint32_t *)&SCB->SCR) | SCB_SCR_SLEEPDEEP_Msk);
 
   /* Fix for errata EMU_E107 - store non-WIC interrupt enable flags.
      Disable the enabled non-WIC interrupts. */
@@ -556,7 +564,7 @@ void EMU_EnterEM3(bool restore)
   }
 
   /* Enter Cortex deep sleep mode */
-  SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
+  uvisor_write32((volatile uint32_t *)&SCB->SCR, uvisor_read32((volatile uint32_t *)&SCB->SCR) | SCB_SCR_SLEEPDEEP_Msk);
 
   /* Fix for errata EMU_E107 - store non-WIC interrupt enable flags.
      Disable the enabled non-WIC interrupts. */

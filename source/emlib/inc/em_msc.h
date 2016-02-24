@@ -40,6 +40,8 @@
 #include <stdbool.h>
 #include "em_bus.h"
 
+#include "uvisor-lib/override.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

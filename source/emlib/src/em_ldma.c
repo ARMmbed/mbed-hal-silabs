@@ -40,6 +40,8 @@
 #include "em_cmu.h"
 #include "em_int.h"
 
+#include "uvisor-lib/override.h"
+
 /***************************************************************************//**
  * @addtogroup EM_Library
  * @{

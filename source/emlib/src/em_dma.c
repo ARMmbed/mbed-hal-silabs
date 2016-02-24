@@ -37,6 +37,8 @@
 #include "em_assert.h"
 #include "em_bus.h"
 
+#include "uvisor-lib/override.h"
+
 /***************************************************************************//**
  * @addtogroup EM_Library
  * @{

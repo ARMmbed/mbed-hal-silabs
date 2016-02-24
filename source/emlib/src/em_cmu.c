@@ -480,6 +480,8 @@ static uint32_t lfClkGet(CMU_Clock_TypeDef lfClkBranch)
     && !defined( _EFM32_WONDER_FAMILY )   \
     && !defined( _EZR32_LEOPARD_FAMILY )  \
     && !defined( _EZR32_WONDER_FAMILY )
+// uVisor compatibility: Use copy of ROMTABLE in RAM instead of real ROMTABLE
+extern uint32_t g_romtable_pid[4];
 /***************************************************************************//**
  * @brief
  *   Return max allowed frequency for low energy peripherals.
@@ -492,13 +494,13 @@ static uint32_t maxFreqHfle(void)
   {
     case systemPartFamilyEfm32Leopard:
       /* CHIP MAJOR bit [5:0] */
-      majorMinorRev = (((ROMTABLE->PID0 & _ROMTABLE_PID0_REVMAJOR_MASK)
+      majorMinorRev = (((g_romtable_pid[0] & _ROMTABLE_PID0_REVMAJOR_MASK)
                         >> _ROMTABLE_PID0_REVMAJOR_SHIFT) << 8);
       /* CHIP MINOR bit [7:4] */
-      majorMinorRev |= (((ROMTABLE->PID2 & _ROMTABLE_PID2_REVMINORMSB_MASK)
+      majorMinorRev |= (((g_romtable_pid[2] & _ROMTABLE_PID2_REVMINORMSB_MASK)
                          >> _ROMTABLE_PID2_REVMINORMSB_SHIFT) << 4);
       /* CHIP MINOR bit [3:0] */
-      majorMinorRev |=  ((ROMTABLE->PID3 & _ROMTABLE_PID3_REVMINORLSB_MASK)
+      majorMinorRev |=  ((g_romtable_pid[3] & _ROMTABLE_PID3_REVMINORLSB_MASK)
                          >> _ROMTABLE_PID3_REVMINORLSB_SHIFT);
 
       if (majorMinorRev >= 0x0204)

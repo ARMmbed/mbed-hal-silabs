@@ -35,6 +35,13 @@
 
 #include "em_device.h"
 
+#if YOTTA_CFG_UVISOR_PRESENT
+// Disable bitbanding if the uVisor is in use. Too many ACLs would be needed.
+#undef BITBAND_PER_BASE
+#undef PER_BITSET_MEM_BASE
+#undef PER_BITCLR_MEM_BASE
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

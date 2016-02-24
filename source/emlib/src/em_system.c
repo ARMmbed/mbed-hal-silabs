@@ -33,6 +33,9 @@
 #include "em_system.h"
 #include "em_assert.h"
 
+// uVisor compatibility: Use copy of ROMTABLE in RAM instead of real ROMTABLE
+extern uint32_t g_romtable_pid[4];
+
 /***************************************************************************//**
  * @addtogroup EM_Library
  * @{
@@ -62,18 +65,18 @@ void SYSTEM_ChipRevisionGet(SYSTEM_ChipRevision_TypeDef *rev)
   EFM_ASSERT(rev);
 
   /* CHIP FAMILY bit [5:2] */
-  tmp  = (((ROMTABLE->PID1 & _ROMTABLE_PID1_FAMILYMSB_MASK) >> _ROMTABLE_PID1_FAMILYMSB_SHIFT) << 2);
+  tmp  = (((g_romtable_pid[1] & _ROMTABLE_PID1_FAMILYMSB_MASK) >> _ROMTABLE_PID1_FAMILYMSB_SHIFT) << 2);
   /* CHIP FAMILY bit [1:0] */
-  tmp |=  ((ROMTABLE->PID0 & _ROMTABLE_PID0_FAMILYLSB_MASK) >> _ROMTABLE_PID0_FAMILYLSB_SHIFT);
+  tmp |=  ((g_romtable_pid[0] & _ROMTABLE_PID0_FAMILYLSB_MASK) >> _ROMTABLE_PID0_FAMILYLSB_SHIFT);
   rev->family = tmp;
 
   /* CHIP MAJOR bit [3:0] */
-  rev->major = (ROMTABLE->PID0 & _ROMTABLE_PID0_REVMAJOR_MASK) >> _ROMTABLE_PID0_REVMAJOR_SHIFT;
+  rev->major = (g_romtable_pid[0] & _ROMTABLE_PID0_REVMAJOR_MASK) >> _ROMTABLE_PID0_REVMAJOR_SHIFT;
 
   /* CHIP MINOR bit [7:4] */
-  tmp  = (((ROMTABLE->PID2 & _ROMTABLE_PID2_REVMINORMSB_MASK) >> _ROMTABLE_PID2_REVMINORMSB_SHIFT) << 4);
+  tmp  = (((g_romtable_pid[2] & _ROMTABLE_PID2_REVMINORMSB_MASK) >> _ROMTABLE_PID2_REVMINORMSB_SHIFT) << 4);
   /* CHIP MINOR bit [3:0] */
-  tmp |=  ((ROMTABLE->PID3 & _ROMTABLE_PID3_REVMINORLSB_MASK) >> _ROMTABLE_PID3_REVMINORLSB_SHIFT);
+  tmp |=  ((g_romtable_pid[3] & _ROMTABLE_PID3_REVMINORLSB_MASK) >> _ROMTABLE_PID3_REVMINORLSB_SHIFT);
   rev->minor = tmp;
 }
 

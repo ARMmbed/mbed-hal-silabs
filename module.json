@@ -34,19 +34,19 @@
   },
   "targetDependencies": {
     "efm32gg-stk": {
-      "mbed-hal-efm32gg": "^1.0.2"
+      "mbed-hal-efm32gg": "^1.1.0"
     },
     "efm32hg-stk": {
-      "mbed-hal-efm32hg": "^1.0.1"
+      "mbed-hal-efm32hg": "^1.1.0"
     },
     "efm32wg-stk": {
-      "mbed-hal-efm32wg": "^1.0.1"
+      "mbed-hal-efm32wg": "^1.1.0"
     },
     "efm32lg-stk": {
-      "mbed-hal-efm32lg": "^1.0.1"
+      "mbed-hal-efm32lg": "^1.1.0"
     },
     "efm32pg-stk": {
-      "mbed-hal-efm32pg": "^1.0.0"
+      "mbed-hal-efm32pg": "^1.1.0"
     },
     "swo": {
       "swo": "~1.1.0"
